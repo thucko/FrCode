@@ -1,5 +1,5 @@
 '''
-Version 4 of data analysis program
+Version 2 of data analysis program Inculding Voigt profile
 Author: Tim Hucko
 
 
@@ -16,6 +16,10 @@ from tkinter import messagebox
 import glob
 from iminuit import Minuit
 from plotnine import *
+from astropy.modeling.models import Voigt1D
+from scipy.special import wofz
+
+
 import matplotlib.pyplot as plt
 
 
@@ -49,21 +53,51 @@ def file_dialog_temp():
 
 
 def save_fig():
-    MsgBox = messagebox.askquestion('Saving Spectra', 'Would you like to save the individual spectra?')
+    MsgBox = messagebox.askquestion('Saving Spectra', 'Would you like to save the spectra(s)?')
     if MsgBox == 'yes':
+        messagebox.showinfo('Saving Spectra', 'Saving the Spectra!')
         return True
     else:
+        messagebox.showinfo('Saving Spectra', 'Not saving the Spectra!')
+        return False
+
+def sum_scan():
+    MsgBox = messagebox.askquestion('Sum Spectra', 'Would you like to sum all the spectra together? (Selecting "No" will'
+                                                   ' look at each file indvidually)')
+    if MsgBox == 'yes':
+        messagebox.showinfo('Sum Spectra', 'Summing the Spectra!')
+        return True
+    else:
+        messagebox.showinfo('Sum Spectra', 'Looking at scans indvidually!')
         return False
 
 
+# Lorentzian function
 def lorentzian(x, p_lorentzian):
-    # Here we use the intensity: I = (I0/pi)*(gamma/2)/((x-x0)^2+(gamma/2)^2) see Demtroeder pg 64
+    # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2)
     # Including and exponetial decay
-    numerator = (p_lorentzian[2] / 2)
+    numerator = (p_lorentzian[2] / 2)**2
     decay = (np.exp(-x / p_lorentzian[4]))
-    denominator1 = np.pi * ((x - (p_lorentzian[3])) ** 2 + (p_lorentzian[2] / 2) ** 2)
+    denominator1 = ((x - (p_lorentzian[3])) ** 2 + (p_lorentzian[2] / 2) ** 2)
     L = p_lorentzian[0] + decay * p_lorentzian[1] * (numerator / denominator1)
     return L
+
+# voigt profile p = [Offset, Height, FWHM, Center, Liftime, Standard deviation]
+# see https://en.wikipedia.org/wiki/Voigt_profile for info on the voigt profile
+def voigt(x, p):
+    decay = (np.exp(-x/p[4]))
+    v1 = Voigt1D(x_0=p[3], amplitude_L=0.18, fwhm_L=p[2], fwhm_G=p[5])
+    V = p[0] + decay * p[1] * v1(x)  #voigt function
+    return V
+
+
+def voigt2(x,p):
+    z = ((x-p[3]) +1j*p[2])/(p[5]*2**0.5)
+    decay = (np.exp(-x / p[4]))
+    num = np.real(wofz(z))
+    dem = p[5]*(2*np.pi)**0.5
+    V = p[0]+decay*p[1]*(num/dem)
+    return V
 
 
 def poly_2 (x,p):
@@ -73,15 +107,17 @@ def poly_2 (x,p):
 
 def Parameters(data):
     # p = [Offset, Height, FWHM, Center, lifetime]
-    p = [np.average(data), np.max(data), 3.6, np.argmax(np.array(data)), 50]
+    p = [np.min(data), np.max(data)-np.min(data), 3.5, np.argmax(np.array(data)), 50]
+    #p = [np.min(data), np.max(data)-np.min(data), 3.6, np.argmax(np.array(data)), 50, 4] # use for voigt
     return p
 
 
 def chi2(p):
     func = lorentzian(x_step, p)  # Our function we need
-    err = y_err  # Uncertainty in the data sqrt(N)
+    err = y_err   # Uncertainty in the data sqrt(N)
     # calculate the chi2
-    chi2_v = sum(pow((y_data - func) / err, 2))
+    delta = (y_data - func) / err
+    chi2_v = sum(pow(delta, 2))
     return chi2_v
 
 
@@ -131,8 +167,18 @@ list_file = pd.DataFrame(columns=['Time', 'File path'])
 
 the_fits = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM', 'Peak Position', 'Lifetime',
                                  'Reduced Chi Squared'])
-the_error = pd.DataFrame(
-    columns=['Time', 'Offset err', 'Peak Height err', 'FWHM err', 'Peak Position err', 'Lifetime err'])
+the_error = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM err', 'Peak Position err',
+                                  'Lifetime err'])
+
+'''the_fits = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM', 'Peak Position', 'Lifetime',
+                                 'Reduced Chi Squared', 'FWHM_G'])
+the_error = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM err', 'Peak Position err',
+                                  'Lifetime err', 'FWHM_G err'])'''
+
+
+sum_data = pd.DataFrame(columns=['Counts'])
+
+
 data_raw = np.array([])
 data_time = []
 n_of_scans = len(file_list)
@@ -176,24 +222,148 @@ for file_path in file_list:
     }, ignore_index=True)
 
 list_file = list_file.sort_values(by='Time')
+prompt1 = sum_scan()
 
-for index, row in list_file.iterrows():
-    times = row['Time']
-    file_path = row['File path']
-    data_raw = (np.genfromtxt(file_path))
+if prompt1 is False:
+    for index, row in list_file.iterrows():
+        times = row['Time']
+        file_path = row['File path']
+        data_raw = (np.genfromtxt(file_path))
+        first_p = 2
+        last_p = 8
+        pps = last_p - first_p
+        data_binned = []
+        a = []
+
+        for i in range(0, 160):
+            y_bin = (data_raw[i * 8 * 1:(i * 8 * 1) + 8 * 1])
+            a = sum(y_bin[first_p:last_p])
+            data_binned = np.append(data_binned, a)
+
+        x = np.arange(0, len(data_binned),1)
+
+        df_Forward = pd.DataFrame({
+            'binned PMT data': data_binned[0:80],
+            'steps': x[0:80],
+            'error': data_binned[0:80] ** 0.5,
+        })
+        df_Backwards = pd.DataFrame({
+            'binned PMT data': data_binned[80:159],
+            'steps': x[80:159],
+            'error': data_binned[80:159] ** 0.5,
+        })
+        ''' Now to minimize the scans'''
+        x_step = df_Forward['steps']
+        y_data = df_Forward['binned PMT data']
+        y_err = df_Forward['error']
+        time_stamp = times
+
+        p1 = Parameters(y_data)  # Generate initial parameter guesses for scans
+        #Use for lorentzian fit
+        m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1),
+                                   limit=(None, None, (2, 6), None, (0, 5000)), fix=(False, False, False, False, False),
+                                   errordef=1, pedantic=False)
+        # use for Voigt fit
+        '''m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
+                                   limit=(None, None, (2, 6), None, (17, 5000), (2, 8)), errordef=1, pedantic=False)'''
+
+        m.migrad()  # This is minimization strategy
+        #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
+        p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"],
+                 m.values["x4"]]  # gather minuit fit parameters for lorentzian fit
+        p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]] # gather minuit fit errors
+        '''p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
+        p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]'''
+        Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+        res = pd.DataFrame({
+            '(Observed-Fit)/Error': (y_data - lorentzian(x_step, p_fit))/df_Forward['error'],
+            'Frequency (MHz)': x_step
+        })
+        # repackage the data
+        repack_data = pd.DataFrame({
+            'Events': y_data,
+            'err_min': y_data - y_err,
+            'err_max': y_data + y_err,
+            'Frequency (MHz)': x_step,
+        })
+
+        the_fits = the_fits.append({
+            'Time': time_stamp,
+            'Offset': p_fit[0],
+            'Peak Height': p_fit[1],
+            'FWHM': p_fit[2],
+            'Peak Position': p_fit[3],
+            'Lifetime': p_fit[4],
+            'Reduced Chi Squared': Red_chi2
+            #'FHWM_G': p_fit[5]
+        }, ignore_index=True)
+
+        the_error = the_error.append({
+            'Time': time_stamp,
+            'Offset err': p_err[0],
+            'Peak Height err': p_err[1],
+            'FWHM err': p_err[2],
+            'Peak Position err': p_err[3],
+            'Lifetime err': p_err[4]
+            #'FHWM_G err': p_err[5]
+        }, ignore_index=True)
+
+         # Use this section if wanting to see plots of each scan
+        x_fit = np.arange(min(df_Forward['steps']), max(df_Forward['steps'])+1, 0.1)
+        y_fit = lorentzian(x_fit, p_fit)
+        fit = pd.DataFrame({
+            'x_fit': x_fit,
+            'y_fit': y_fit
+        })
+        g1 = (ggplot()
+              + ggtitle('Forward Scan #%d @ %s' % (q, volt))
+              + geom_point(repack_data, aes(x='Frequency (MHz)', y='Events'), color='red')
+              + geom_errorbar(repack_data, aes(x='Frequency (MHz)', ymin='err_min', ymax='err_max'))
+              + geom_line(fit, aes(x='x_fit', y='y_fit'), color='blue')
+              )
+        g2 = (ggplot()
+              + ggtitle('Residual #%d @ %s' % (q, volt))
+              + geom_point(res, aes(x='Frequency (MHz)', y='(Observed-Fit)/Error'), color='red')
+             )
+        #print(g1, g2)
+
+        if fig_save is True:
+            ggplot.save(g1, filename='forward_scan_%d.pdf' % q,
+                    path=fig_pwd)
+            ggplot.save(g2, filename='residuals_%d.pdf' % q,
+                    path=fig_pwd)
+            q = q + 1
+
+
+    print("Minimization complete")
+    theme_set(theme_void())
+    # save the data and errors to csv files
+    the_fits.to_csv(file_save(), sep='\t', index=False)
+    #the_error.to_csv(file_save(), sep='\t', index=False)
+    error_bar = pd.DataFrame({
+        'x': the_error['Time'],
+        'err_min': the_fits['Peak Position'] - the_error['Peak Position err'],
+        'err_max': the_fits['Peak Position'] + the_error['Peak Position err']
+    })
+
+elif prompt1 is True:
+    for index, row in list_file.iterrows():
+        file_path = row['File path']
+        data_raw = (np.genfromtxt(file_path))
+        sum_data = sum_data.append({
+            'Counts': data_raw
+        }, ignore_index=True)
     first_p = 2
     last_p = 8
     pps = last_p - first_p
     data_binned = []
     a = []
-
-    for i in range(0, 160):
+    for i in range(0,160):
         y_bin = (data_raw[i * 8 * 1:(i * 8 * 1) + 8 * 1])
         a = sum(y_bin[first_p:last_p])
         data_binned = np.append(data_binned, a)
 
-    x = np.arange(0, len(data_binned))
-
+    x = np.arange(0, len(data_binned), 1)
     df_Forward = pd.DataFrame({
         'binned PMT data': data_binned[0:80],
         'steps': x[0:80],
@@ -208,19 +378,28 @@ for index, row in list_file.iterrows():
     x_step = df_Forward['steps']
     y_data = df_Forward['binned PMT data']
     y_err = df_Forward['error']
-    time_stamp = times
+    time_stamp = "N/A"
 
     p1 = Parameters(y_data)  # Generate initial parameter guesses for scans
+    # Use for lorentzian fit
     m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1),
-                               limit=(None, None, (2, 4), None, (17, 5000)), errordef=1, pedantic=False)
+                               limit=(None, None, (2, 6), None, (0, 5000)), fix=(False, False, False, False, False),
+                               errordef=1, pedantic=False)
+    # use for Voigt fit
+    '''m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
+                               limit=(None, None, (2, 6), None, (17, 5000), (2, 8)), errordef=1, pedantic=False)'''
+
     m.migrad()  # This is minimization strategy
     #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
     p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"],
-             m.values["x4"]]  # gather minuit fit parameters
+             m.values["x4"]]  # gather minuit fit parameters for lorentzian fit
     p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]]  # gather minuit fit errors
-    Red_chi2 = chi2(p_fit) // (len(y_data) - len(p_fit))
+    '''p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
+    p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]'''
+    Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+    print(Red_chi2)
     res = pd.DataFrame({
-        'Fit - Observed': y_data - lorentzian(x_step, p_fit),
+        '(Observed-Fit)/Error': (y_data - lorentzian(x_step, p_fit)) / df_Forward['error'],
         'Frequency (MHz)': x_step
     })
     # repackage the data
@@ -239,6 +418,7 @@ for index, row in list_file.iterrows():
         'Peak Position': p_fit[3],
         'Lifetime': p_fit[4],
         'Reduced Chi Squared': Red_chi2
+        # 'FHWM_G': p_fit[5]
     }, ignore_index=True)
 
     the_error = the_error.append({
@@ -247,46 +427,35 @@ for index, row in list_file.iterrows():
         'Peak Height err': p_err[1],
         'FWHM err': p_err[2],
         'Peak Position err': p_err[3],
-        'Lifetime err': p_err[4],
+        'Lifetime err': p_err[4]
+        # 'FHWM_G err': p_err[5]
     }, ignore_index=True)
 
-     # Use this section if wanting to see plots of each scan
-    x_fit = np.arange(0, len(x_step), 0.1)
+    # Use this section if wanting to see plots of each scan
+    x_fit = np.arange(min(df_Forward['steps']), max(df_Forward['steps']) + 1, 0.1)
     y_fit = lorentzian(x_fit, p_fit)
     fit = pd.DataFrame({
         'x_fit': x_fit,
         'y_fit': y_fit
     })
     g1 = (ggplot()
-          + ggtitle('Forward Scan #%d @ %s' % (q, volt))
+          + ggtitle('Forward Scan @ %s' %  volt)
           + geom_point(repack_data, aes(x='Frequency (MHz)', y='Events'), color='red')
           + geom_errorbar(repack_data, aes(x='Frequency (MHz)', ymin='err_min', ymax='err_max'))
           + geom_line(fit, aes(x='x_fit', y='y_fit'), color='blue')
           )
     g2 = (ggplot()
-          + ggtitle('Residual #%d @ %s' % (q, volt))
-          + geom_point(res, aes(x='Frequency (MHz)', y='Fit - Observed'), color='red')
-         )
-    #print(g1, g2)
+          + ggtitle('Residual @ %s' % volt)
+          + geom_point(res, aes(x='Frequency (MHz)', y='(Observed-Fit)/Error'), color='red')
+          )
+    print(g1, g2)
 
     if fig_save is True:
-        ggplot.save(g1, filename='forward_scan_%d.pdf' % q,
-                path=fig_pwd)
-        ggplot.save(g2, filename='residuals_%d.pdf' % q,
-                path=fig_pwd)
-        q = q + 1
+        ggplot.save(g1, filename='forward_scan_%s.pdf' % volt,
+                    path=fig_pwd)
+        ggplot.save(g2, filename='residuals_%s.pdf' % volt,
+                    path=fig_pwd)
 
-
-print("Minimization complete")
-theme_set(theme_void())
-# save the data and errors to csv files
-the_fits.to_csv(file_save(), sep='\t', index=False)
-the_error.to_csv(file_save(), sep='\t', index=False)
-error_bar = pd.DataFrame({
-    'x': the_error['Time'],
-    'err_min': the_fits['Peak Position'] - the_error['Peak Position err'],
-    'err_max': the_fits['Peak Position'] + the_error['Peak Position err']
-})
 # grab the temperature file un-comment if wanting to use
 '''file_data = file_dialog_temp()
 data = grab(file_data)
