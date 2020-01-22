@@ -1,7 +1,7 @@
 '''
-Version 2 of data analysis program Inculding Voigt profile
+Version 3 of data analysis program Inculding Voigt profile
+removed the temperature plotting part since this will be used and a spectra fitting program
 Author: Tim Hucko
-
 
 '''
 
@@ -16,20 +16,18 @@ from tkinter import messagebox
 import glob
 from iminuit import Minuit
 from plotnine import *
-from astropy.modeling.models import Voigt1D
 from scipy.special import wofz
 from tkinter import *
 
 
-import matplotlib.pyplot as plt
-
-
+# Definition for selecting directory
 def dir_dialog():
     Tk().withdraw()
     pwd = askdirectory()
     return pwd
 
 
+# Definition for saving files
 def file_save():
     f = asksaveasfile(mode='w', defaultextension=".txt")
     if f is None: # asksaveasfile return `None` if dialog closed with "cancel".
@@ -37,22 +35,14 @@ def file_save():
     return f
 
 
+# Definition for choosing a file
 def file_dialog():
     Tk().withdraw()
     file = askopenfilename()
     return file
 
 
-def file_dialog_temp():
-    Tk().withdraw()
-    file = askopenfilename()
-    x = np.genfromtxt(file, dtype='unicode_', usecols=1)#Times
-    y_ULE = np.genfromtxt(file, dtype=None, usecols=3)#ULE temp
-    y_box = np.genfromtxt(file, dtype=None, usecols=7)#ULE Box temp
-    y_outside = np.genfromtxt(file, dtype=None, usecols=8)#Temo of room near ULE
-    return [x, y_ULE, y_box, y_outside]
-
-
+# Definition for choosing whether to save the spectra figures
 def save_fig():
     MsgBox = messagebox.askquestion('Saving Spectra', 'Would you like to save the spectra(s)?')
     if MsgBox == 'yes':
@@ -62,6 +52,8 @@ def save_fig():
         messagebox.showinfo('Saving Spectra', 'Not saving the Spectra!')
         return False
 
+
+# Definition for choosing to sum the scans or look at individual scans
 def sum_scan():
     MsgBox = messagebox.askquestion('Sum Spectra', 'Would you like to sum all the spectra together? (Selecting "No" will'
                                                    ' look at each file indvidually)')
@@ -83,15 +75,9 @@ def lorentzian(x, p_lorentzian):
     L = p_lorentzian[0] + decay * p_lorentzian[1] * (numerator / denominator1)
     return L
 
-# voigt profile p = [Offset, Height, FWHM, Center, Liftime, Standard deviation]
-# see https://en.wikipedia.org/wiki/Voigt_profile for info on the voigt profile
-def voigt2(x, p):
-    decay = (np.exp(-x/p[4]))
-    v1 = Voigt1D(x_0=p[3], amplitude_L=0.18, fwhm_L=p[2], fwhm_G=p[5])
-    V = p[0] + decay * p[1] * v1(x)  #voigt function
-    return V
 
-
+# Voigt profile
+# see https://en.wikipedia.org/wiki/Voigt_profile for info on the Voigt profile
 def voigt(x, p):
     sigma = p[5]/(2*np.sqrt(2*np.log(2)))
     gamma = p[2]/2
@@ -103,22 +89,20 @@ def voigt(x, p):
     return V
 
 
-def poly_2 (x,p):
-    y = p[0]+p[1]*x+p[2]*x**2
-    return y
-
-
+# Parameters for minimization includes Voigt and Lorentzian parameters
 def Parameters(data, f):
-    # p = [Offset, Height, FWHM, Center, lifetime]
+    # Lorentzain: p = [Offset, Height, FWHM, Center, lifetime]
+    # Voigt: p = [Offset, Height, FWHM_L, FWHM_G, Center, Liftime]
     if f == 'Lorentzian':
         p = [np.min(data), np.max(data)-np.min(data), 3.5, np.argmax(np.array(data)), 50]
         return p
     elif f == 'Voigt':
-        p = [np.min(data), np.max(data), 3.6, np.argmax(np.array(data)), 50, 1] # use for voigt
+
+        p = [np.min(data), np.max(data), 3.6, np.argmax(np.array(data)), 50, 1]
         return p
 
 
-
+# Chi squared function used in the minimization
 def chi2(p):
 
     if sel == 'Lorentzian':
@@ -132,43 +116,7 @@ def chi2(p):
     return chi2_v
 
 
-def chi2_poly(p):
-    func = poly_2(x_poly, p)
-    err = the_error['Peak Position err']
-    dat = the_fits['Peak Position']
-    chi2_p = sum(pow((dat-func) / err, 2))
-    return chi2_p
-
-
-def grab(x):
-    start_time = input("Start Time: ")
-    end_time = input("End Time: ")
-    start_time = str(start_time + ":")  # always take the hh:mm:
-    end_time = str(end_time + ":")
-    st_index = [i for i, s in enumerate(x[0]) if start_time in s]
-    et_index = [i for i, s in enumerate(x[0]) if end_time in s]
-    st_index = np.asanyarray(st_index)
-    et_index = np.asanyarray(et_index)
-    Time = x[0][st_index[0]:et_index[0]]
-    ULE_Temp = x[1][st_index[0]:et_index[0]]
-    box_Temp = x[2][st_index[0]:et_index[0]]
-    outside_temp = x[3][st_index[0]:et_index[0]]
-    return[Time, ULE_Temp, box_Temp, outside_temp]
-
-
-def append_array(x, y):
-    x[0] = np.append(x[0], y[0])
-    x[1] = np.append(x[1], y[1])
-    x[2] = np.append(x[2], y[2])
-    x[3] = np.append(x[3], y[3])
-    return [x[0], x[1], x[2], x[3]]
-
-
-def cal(x):
-    avg = np.average(x)
-    std = np.std(x)
-    return [avg, std]
-
+# Used for selecting Lorentzian or Voigt fitting fucntions
 def ok():
     global sel
     sel = var.get()
@@ -583,92 +531,4 @@ elif prompt1 is True:
     #save minuit output to files
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save(), sep='\t', index=False)
-# grab the temperature file un-comment if wanting to use
-'''file_data = file_dialog_temp()
-data = grab(file_data)
-
-
-user1 = input("Add another file? (y/n): ")
-# loop to add more temperature data
-while(user1 == "y"):
-    file_data2 = file_dialog_temp()
-    new_data = grab(file_data2)
-    data = append_array(data, new_data)
-    user1 = input("Add another file? (y/n): ")'''
-
-# plot peak positions
-
-'''print('Load peak positions')
-pos = np.genfromtxt(file_dialog(), dtype='float64', usecols=4,
-                    skip_header=True)
-print('Load peak positions uncertainties')
-err = np.genfromtxt(file_dialog(), dtype='float64', usecols=4,
-                    skip_header=True)
-print('Load reduced chi square values')
-chi = np.genfromtxt(file_dialog(), dtype='float64', usecols=6,
-                    skip_header=True)
-x = np.arange(0, len(pos), 1)*20/60
-
-df = pd.DataFrame({
-        'Peak Position (MHz)': pos,
-        'err_m': pos - err,
-        'err_mx': pos + err,
-        'Time (mins)': x,
-        'Reduced Chi Squared': chi}
-)
-
-g3 = (ggplot(df, aes(x='Time (mins)', y='Peak Position (MHz)'))
-     + ggtitle('Peak Positions')
-     + geom_point(color='red')
-     + geom_errorbar(aes(x='Time (mins)', ymin='err_m', ymax='err_mx'))
-)
-g4 = (ggplot(df, aes(x='Time (mins)', y='Reduced Chi Squared'))
-     + ggtitle('Reduced Chi Squareds')
-     + geom_point(color='green')
-            )
-g5 = (ggplot(df, aes('Peak Position (MHz)'))
-     + ggtitle('Histogram of Peak Positions')
-     + geom_histogram(color='red')
-             )
-g6 = (ggplot(df, aes('Reduced Chi Squared'))
-     + ggtitle('Histogram of Reduced Chi Squared')
-     + geom_histogram(color='green')
-             )
-print(g3, g4, g5, g6)
-print('Saving figures...')
-save_as_pdf_pages([g3, g4, g5, g6], filename=file_save())'''
-
-
-# if using temperature un-comment this section
-#xtic = np.arange(0, len(the_fits))*20/60
-"""fig = plt.figure()
-
-#ax1 = fig.add_subplot(111, label="ULE Temperature")
-ax2 = fig.add_subplot(111, label="Peak positions", frame_on=False)
-
-#plt.title("ULE Temperatures and Peak Positions", fontsize="20")
-plt.title("Peak Positions @ %s" % volt, fontsize="20")
-
-
-
-#ax1.get_xaxis().set_visible(False)
-'''ax1.plot(data[0], data[1], "bo", label="ULE Temperature", ms=5)
-ax1.yaxis.tick_right()
-ax1.yaxis.set_label_position('right')
-ax1.set_xlabel('Hours', fontsize='15')
-ax1.set_ylabel('Temperatures (degree C)', fontsize="15")
-'''
-
-#ax2.get_xaxis().set_visible(False)
-ax2.set_ylabel('Peak position (MHz)', fontsize="15")
-#ax2.xaxis.set_ticks(xtic)
-ax2.set_xlabel('Hours', fontsize='15')
-ax2.set_ylim([35, 50])
-ax2.errorbar(the_fits['Time'], the_fits['Peak Position'], the_error['Peak Position err'],  label="Peak positions",
-             fmt='ro')
-fig.tight_layout()
-plt.legend()
-plt.grid()
-plt.show()
-plt.close('all')"""
 exit()
