@@ -366,7 +366,7 @@ if prompt1 is False:
     theme_set(theme_void())
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
-    #the_error.to_csv(file_save(), sep='\t', index=False)
+    the_error.to_csv(file_save(), sep='\t', index=False)
     error_bar = pd.DataFrame({
         'x': the_error['Time'],
         'err_min': the_fits['Peak Position'] - the_error['Peak Position err'],
