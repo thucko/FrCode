@@ -121,6 +121,8 @@ def ok():
     global sel
     sel = var.get()
     roo.quit()
+    roo.destroy()
+
 
 
 # Grabs the directory for the data
@@ -293,7 +295,7 @@ if prompt1 is False:
 
             # use for Voigt fit
             m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
-                                       limit=(None, None, (2, 6), None, (17, 500), (0.5, 4)),
+                                       limit=(None, None, (3, 6), None, (17, 500), (0.6, 4)),
                                        fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad()  # This is minimization strategy
             p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
@@ -463,7 +465,7 @@ elif prompt1 is True:
     elif sel == 'Voigt':
 
         m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
-                                   limit=(None, None, (2, 6), None, (17, 500), (0.3, 6)),
+                                   limit=(None, None, (3, 6), None, (17, 500), (0.6, 6)),
                                    fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
         #       [Offset        , Height        , FWHM_L         , Center        , lifetime ,     FWHM_G        ]
@@ -521,7 +523,7 @@ elif prompt1 is True:
           + geom_point(res, aes(x='Frequency (MHz)', y='(Observed-Fit)/Error'), color='red')
           )
 
-    print(g1, g2)
+    #print(g1, g2)
     # save figures
     if fig_save is True:
         ggplot.save(g1, filename='forward_scan_summed_%s_fit_%s.pdf' % (sel, volt),
