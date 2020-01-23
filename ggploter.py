@@ -32,13 +32,13 @@ root.withdraw()
 volt = simpledialog.askstring(title='Voltage', prompt='Voltage used:')
 
 print('Load peak positions')
-pos = np.genfromtxt(file_dialog(), dtype='float64', usecols=4,
+pos = np.genfromtxt(file_dialog(), dtype='float64', usecols=5,
                     skip_header=True)
 print('Load peak positions uncertainties')
-err = np.genfromtxt(file_dialog(), dtype='float64', usecols=4,
+err = np.genfromtxt(file_dialog(), dtype='float64', usecols=5,
                     skip_header=True)
 print('Load reduced chi square values')
-chi = np.genfromtxt(file_dialog(), dtype='float64', usecols=6,
+chi = np.genfromtxt(file_dialog(), dtype='float64', usecols=7,
                     skip_header=True)
 x = np.arange(0, len(pos), 1)*20/60
 
@@ -66,12 +66,12 @@ g2 = (ggplot(df, aes(x='Time (mins)', y='Reduced Chi Squared'))
             )
 g3 = (ggplot(df, aes('Peak Position (MHz)'))
      + ggtitle('Histogram of Peak Positions @ %s' % volt)
-     + geom_histogram(color='red')
+     + geom_histogram(color='red', binwidth=0.05)
              )
 g4 = (ggplot(df, aes('Reduced Chi Squared'))
      + ggtitle('Histogram of Reduced Chi Squared @ %s' % volt)
-     + geom_histogram(color='green')
+     + geom_histogram(color='green', binwidth=0.1)
       )
 
-print(g1)
-save_as_pdf_pages([g1, g2, g3, g4], filename='peak_pos_%s' % volt, path=dir_dialog())
+#print(g1)
+save_as_pdf_pages([g1, g2, g3, g4], filename='peak_pos_%s.pdf' % volt, path=dir_dialog())
