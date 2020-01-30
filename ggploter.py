@@ -1,11 +1,12 @@
 import numpy as np
 from plotnine import *
 import pandas as pd
-from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfile
 from tkinter import simpledialog
 from tkinter.filedialog import askdirectory
+from tkinter import *
+from scipy.stats import norm
 
 
 
@@ -27,6 +28,39 @@ def dir_dialog():
     pwd = askdirectory()
     return pwd
 
+
+def parameters(d):
+    p = [np.average(d), np.std(d)]
+    return p
+
+def gauss(x, p):
+    denom = p[1]*np.sqrt(2*np.pi)
+    num = np.exp(-0.5*((x-p[0])/p[1])**2)
+    g = 7.5*num/denom
+    return g
+
+
+
+
+def select():
+    global sel2
+    sel2 = var2.get()
+    roo2.quit()
+    roo2.destroy()
+
+# GUI for selecting forward or backwards scans
+direction = ['Forward', 'Backward']
+roo2 = Tk()
+roo2.geometry('260x75')
+roo2.resizable(0, 0)
+roo2.title('Scan Selection')
+var2 = StringVar(roo2)
+var2.set(direction[0])
+w2 = OptionMenu(roo2, var2, *direction)
+w2.pack()
+button2 = Button(roo2, text="Select", command=select)
+button2.pack()
+mainloop()
 root = Tk()
 root.withdraw()
 volt = simpledialog.askstring(title='Voltage', prompt='Voltage used:')
@@ -42,36 +76,62 @@ chi = np.genfromtxt(file_dialog(), dtype='float64', usecols=7,
                     skip_header=True)
 x = np.arange(0, len(pos), 1)*20/60
 
-df = pd.DataFrame({
-        'Peak Position (MHz)': pos,
-        'err_m': pos - err,
-        'err_mx': pos + err,
+if sel2 == 'Forward':
+    df = pd.DataFrame({
+            'Peak Position (MHz)': pos,
+            'err_m': pos - err,
+            'err_mx': pos + err,
+            'Time (mins)': x,
+            'Reduced Chi Squared': chi}
+    )
+elif sel2 == 'Backward':
+    df = pd.DataFrame({
+        'Peak Position (MHz)': 158 - pos,
+        'err_m': (158 - pos) - err,
+        'err_mx': (158 - pos) + err,
         'Time (mins)': x,
         'Reduced Chi Squared': chi}
-)
+    )
+
+
+
+mu, std = norm.fit(df['Peak Position (MHz)'])
+
+p = [mu, std]
+
+x = np.arange(39.6, 40.7, 0.01)
+
+f = gauss(x, p)
+
+g = pd.DataFrame({
+    'x': x,
+    'G': f
+})
+
 
 y1 = max(df['Peak Position (MHz)'])+0.1
 y2 = min(df['Peak Position (MHz)'])-0.1
 
 g1 = (ggplot(df, aes(x='Time (mins)', y='Peak Position (MHz)'))
-     + ggtitle('Peak Positions @ %s' % volt)
+     + ggtitle('%s Scans Peak Positions @ %s' % (sel2, volt))
      + geom_point(color='red')
      + geom_errorbar(aes(x='Time (mins)', ymin='err_m', ymax='err_mx'))
      + ylim(y2, y1)
 
      )
 g2 = (ggplot(df, aes(x='Time (mins)', y='Reduced Chi Squared'))
-     + ggtitle('Reduced Chi Squared @ %s' % volt)
+     + ggtitle('%s Scans Reduced Chi Squared @ %s' % (sel2, volt))
      + geom_point(color='green')
             )
 g3 = (ggplot(df, aes('Peak Position (MHz)'))
-     + ggtitle('Histogram of Peak Positions @ %s' % volt)
+     + ggtitle('%s Scans Histogram of Peak Positions @ %s \n mu = %.3f, sigma=%.3f' % (sel2, volt, p[0], p[1]))
      + geom_histogram(color='red', binwidth=0.05)
-             )
+     + geom_line(g, aes(x='x', y='G'), color='blue')
+              )
 g4 = (ggplot(df, aes('Reduced Chi Squared'))
-     + ggtitle('Histogram of Reduced Chi Squared @ %s' % volt)
+     + ggtitle('%s Scans Histogram of Reduced Chi Squared @ %s' % (sel2, volt))
      + geom_histogram(color='green', binwidth=0.1)
       )
 
-#print(g1)
-save_as_pdf_pages([g1, g2, g3, g4], filename='peak_pos_%s.pdf' % volt, path=dir_dialog())
+#print(g3)
+save_as_pdf_pages([g1, g2, g3, g4], filename='%s_scan_peak_pos_%s.pdf' %(sel2, volt), path=dir_dialog())
