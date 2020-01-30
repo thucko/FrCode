@@ -7,7 +7,6 @@ Author: Tim Hucko
 
 import numpy as np
 import pandas as pd
-from tkinter import Tk
 from tkinter import simpledialog
 from tkinter.filedialog import askdirectory
 from tkinter.filedialog import askopenfilename
@@ -210,15 +209,22 @@ for file_path in file_list:
     time = time.replace(' ', '')
     # pm_am = time.find('PM')
     if (time.endswith('PM')):
-        time = time.replace('PM', '')
-        time = str(0) + time
-        hour = int(time[0:2])
-        hour = hour + 12
-        time = str(hour) + time[2::]
+
+        if time[0:2] == '12':
+            time = time.replace('PM', '')
+        else:
+            time = time.replace('PM', '')
+            time = str(0) + time
+            hour = int(time[0:2])
+            hour = hour + 12
+            time = str(hour) + time[2::]
     elif (time.endswith('AM')):
         time = time.replace('AM', '')
-        if (len(time) != 12):
-            time = str(0) + time
+        if time[0:2] == '12':
+            time = time.replace(time[0:2], '00')
+        else:
+            if (len(time) != 12):
+                time = str(0) + time
     f.close()
     list_file = list_file.append({
         'Time': time,
