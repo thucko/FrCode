@@ -1,3 +1,8 @@
+"""
+Author: Tim Hucko
+Version: 1
+
+"""
 import numpy as np
 from plotnine import *
 import pandas as pd
@@ -33,13 +38,12 @@ def parameters(d):
     p = [np.average(d), np.std(d)]
     return p
 
+
 def gauss(x, p):
     denom = p[1]*np.sqrt(2*np.pi)
     num = np.exp(-0.5*((x-p[0])/p[1])**2)
     g = num/denom
     return g
-
-
 
 
 def select():
