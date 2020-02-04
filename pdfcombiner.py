@@ -1,3 +1,9 @@
+"""
+Author: Tim Hucko
+Version: 0
+"""
+
+
 from PyPDF2 import PdfFileMerger
 from PyPDF2 import PdfFileWriter
 from tkinter.filedialog import askopenfilenames
