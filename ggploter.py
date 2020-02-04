@@ -36,7 +36,7 @@ def parameters(d):
 def gauss(x, p):
     denom = p[1]*np.sqrt(2*np.pi)
     num = np.exp(-0.5*((x-p[0])/p[1])**2)
-    g = 7.5*num/denom
+    g = num/denom
     return g
 
 
@@ -99,14 +99,19 @@ mu, std = norm.fit(df['Peak Position (MHz)'])
 
 p = [mu, std]
 
-x = np.arange(39.6, 40.7, 0.01)
+x = np.arange(np.min(df['Peak Position (MHz)'])-0.15, np.max(df['Peak Position (MHz)'])+0.15, 0.01)
 
-f = gauss(x, p)
+f = norm.pdf(x, p[0], p[1])
 
 g = pd.DataFrame({
     'x': x,
     'G': f
 })
+
+
+
+
+
 
 
 y1 = max(df['Peak Position (MHz)'])+0.1
@@ -123,11 +128,13 @@ g2 = (ggplot(df, aes(x='Time (mins)', y='Reduced Chi Squared'))
      + ggtitle('%s Scans Reduced Chi Squared @ %s' % (sel2, volt))
      + geom_point(color='green')
             )
-g3 = (ggplot(df, aes('Peak Position (MHz)'))
+g3 = (ggplot(df, aes(x='Peak Position (MHz)', y='stat(density)'))
      + ggtitle('%s Scans Histogram of Peak Positions @ %s \n mu = %.3f, sigma=%.3f' % (sel2, volt, p[0], p[1]))
      + geom_histogram(color='red', binwidth=0.05)
      + geom_line(g, aes(x='x', y='G'), color='blue')
+     + ylab('Counts/n')
               )
+
 g4 = (ggplot(df, aes('Reduced Chi Squared'))
      + ggtitle('%s Scans Histogram of Reduced Chi Squared @ %s' % (sel2, volt))
      + geom_histogram(color='green', binwidth=0.1)
