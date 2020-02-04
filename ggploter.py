@@ -109,10 +109,11 @@ g = pd.DataFrame({
 })
 
 
+l = np.sqrt(len(df['Peak Position (MHz)']))
 
+width = (np.max(df['Peak Position (MHz)'])-np.min(df['Peak Position (MHz)']))/l
 
-
-
+width2 = (np.max(df['Reduced Chi Squared'])-np.min(df['Reduced Chi Squared']))/(l*5)
 
 y1 = max(df['Peak Position (MHz)'])+0.1
 y2 = min(df['Peak Position (MHz)'])-0.1
@@ -130,15 +131,15 @@ g2 = (ggplot(df, aes(x='Time (mins)', y='Reduced Chi Squared'))
             )
 g3 = (ggplot(df, aes(x='Peak Position (MHz)', y='stat(density)'))
      + ggtitle('%s Scans Histogram of Peak Positions @ %s \n mu = %.3f, sigma=%.3f' % (sel2, volt, p[0], p[1]))
-     + geom_histogram(color='red', binwidth=0.05)
+     + geom_histogram(color='red', binwidth=width)
      + geom_line(g, aes(x='x', y='G'), color='blue')
-     + ylab('Counts/n')
+     + ylab('Density')
               )
 
 g4 = (ggplot(df, aes('Reduced Chi Squared'))
      + ggtitle('%s Scans Histogram of Reduced Chi Squared @ %s' % (sel2, volt))
-     + geom_histogram(color='green', binwidth=0.1)
+     + geom_histogram(color='green', binwidth=width2)
       )
 
 #print(g3)
-save_as_pdf_pages([g1, g2, g3, g4], filename='%s_scan_peak_pos_%s.pdf' %(sel2, volt), path=dir_dialog())
+save_as_pdf_pages([g1, g2, g3, g4], filename='%s_scan_peak_positions_%s.pdf' %(sel2, volt), path=dir_dialog())

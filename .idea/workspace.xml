@@ -14,7 +14,7 @@
       <file leaf-file-name="FrPNC_Spectra_fitter_v4.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2649">
+            <state relative-caret-position="2465">
               <caret line="156" column="23" selection-start-line="156" selection-start-column="22" selection-end-line="156" selection-end-column="23" />
               <folding>
                 <element signature="e#148#166#0" expanded="true" />
@@ -26,7 +26,7 @@
       <file leaf-file-name="pdfcombiner.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pdfcombiner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="357">
+            <state relative-caret-position="272">
               <caret line="21" selection-start-line="21" selection-end-line="21" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
@@ -38,8 +38,8 @@
       <file leaf-file-name="ggploter.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ggploter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="575">
-              <caret line="142" column="1" selection-start-line="142" selection-start-column="1" selection-end-line="142" selection-end-column="1" />
+            <state relative-caret-position="193">
+              <caret line="115" column="83" selection-start-line="115" selection-start-column="83" selection-end-line="115" selection-end-column="83" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -71,8 +71,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
-    <option name="y" value="-10" />
+    <option name="x" value="-69" />
+    <option name="y" value="-19" />
     <option name="width" value="1940" />
     <option name="height" value="1100" />
   </component>
@@ -111,7 +111,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.ggploter">
+  <component name="RunManager" selected="Python.pdfcombiner">
     <configuration name="FrPNC_Spectra_fitter" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -191,13 +191,13 @@
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.07534699" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32614556" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32884097" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32614556" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39869282" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39703155" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -219,10 +219,40 @@
           <option name="timeStamp" value="14" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="19" />
+      <option name="time" value="24" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2652">
+          <caret line="156" column="23" selection-start-line="156" selection-start-column="22" selection-end-line="156" selection-end-column="23" />
+          <folding>
+            <element signature="e#148#166#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pdfcombiner.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2278">
+          <caret line="142" column="1" selection-start-line="142" selection-start-column="1" selection-end-line="142" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9894">
@@ -379,7 +409,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pdfcombiner.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
+        <state relative-caret-position="272">
           <caret line="21" selection-start-line="21" selection-end-line="21" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
@@ -389,7 +419,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2649">
+        <state relative-caret-position="2465">
           <caret line="156" column="23" selection-start-line="156" selection-start-column="22" selection-end-line="156" selection-end-column="23" />
           <folding>
             <element signature="e#148#166#0" expanded="true" />
@@ -399,8 +429,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ggploter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="575">
-          <caret line="142" column="1" selection-start-line="142" selection-start-column="1" selection-end-line="142" selection-end-column="1" />
+        <state relative-caret-position="193">
+          <caret line="115" column="83" selection-start-line="115" selection-start-column="83" selection-end-line="115" selection-end-column="83" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
