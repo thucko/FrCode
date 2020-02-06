@@ -28,10 +28,17 @@ def dir_dialog():
 
 # Definition for saving files
 def file_save():
-    f = asksaveasfile(mode='w', defaultextension=".txt")
-    if f is None: # asksaveasfile return `None` if dialog closed with "cancel".
+    f = asksaveasfile(mode='w', defaultextension=".txt", initialfile="%s_%s_data" % (volt, sel2))
+    if f is None:  # asksaveasfile return `None` if dialog closed with "cancel".
         return
     return f
+
+def file_save_err():
+    f = asksaveasfile(mode='w', defaultextension=".txt", initialfile="%s_%s_err" % (volt, sel2))
+    if f is None:  # asksaveasfile return `None` if dialog closed with "cancel".
+        return
+    return f
+
 
 
 # Definition for choosing a file
@@ -409,7 +416,8 @@ if prompt1 is False:
     theme_set(theme_void())
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
-    the_error.to_csv(file_save(), sep='\t', index=False)
+    the_error.to_csv(file_save_err(), sep='\t', index=False)
+
 
 
 # if user selects to sum all the scans together
@@ -578,5 +586,17 @@ elif prompt1 is True:
                     path=fig_pwd)
     #save minuit output to files
     the_fits.to_csv(file_save(), sep='\t', index=False)
-    the_error.to_csv(file_save(), sep='\t', index=False)
+    the_error.to_csv(file_save_err(), sep='\t', index=False)
+
+
+    # Saving Stark Data
+    P = np.float64(the_fits['Peak Position'])
+    E = np.float64(the_error['Peak Position err'])
+    stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
+    file_name = "Stark_data_%s.txt" % sel2
+    fn = open(file_name, 'a+')
+    fn.write(stark_data+'\n')
+    fn.close()
+
+
 exit()
