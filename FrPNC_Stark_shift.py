@@ -13,7 +13,7 @@ from tkinter import *
 import pandas as pd
 
 
-def quad (x, p):
+def quad(x, p):
     y = p[0]*x+p[1]
     return y
 
@@ -25,12 +25,11 @@ def file_dialog():
 
 
 def chi2(p):
-    func = quad(x_data, p)
-    err = y_err
+    func = quad(x_data[0:len(x_data)-1], p)
+    err = y_err[0:len(y_err)-1]
     # calculate the chi2
-    delta = (y_data - func) / err
-    chi2_v = sum(pow(delta, 2))
-    return chi2_v
+    delta = sum(((y_data[0:len(y_data)-1] - func)/err)**2)
+    return delta
 
 # Define some useful sci-notation
 sci = {'m': 10**-3, 'c': 10**-2, 'k': 10**3, 'M': 10**6, 'G': 10**9}
@@ -58,22 +57,23 @@ for j in range(0, int(len(volt)/2)):
         'Uncertainty': np.sqrt(pos_err[2*j]**2+pos_err[2*j+1]**2)
     }, ignore_index=True)
 
-y_err = data['Uncertainty']*np.sqrt(38.660597)
+y_err = data['Uncertainty']
 y_data = data['Frequency']
 x_data = data['EField']
-p1 = [-0.5,0]
+p1 = [0.5, -0.03]
 
-m = Minuit.from_array_func(chi2, p1, error=(0.01, 0.01), limit=(None, None), fix=(False, False)
-                           , errordef=1, pedantic=True)
+m = Minuit.from_array_func(chi2, p1, error=(0.05, 0.03), limit=(None, None), fix=(False, False)
+                           , errordef=1)
 m.migrad()
 
 
 p_fit = [m.values['x0'], m.values['x1']]
 p_err = [m.errors['x0'], m.errors['x1']]
 Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+print(m.fval/(len(y_data) - len(p_fit)))
 print(Red_chi2)
-print(p_fit)
-
+print('delta m = %.4f' % p_err[0])
+print('delta b = %.4f' % p_err[1])
 x_fit = np.arange(np.min(x_data), np.max(x_data), 0.01)
 y_fit = quad(x_fit, p_fit)
 
@@ -89,8 +89,10 @@ g1 = (ggplot(data, aes(x='EField', y='Frequency'))
             + geom_errorbar(aes(x='EField', ymin='Frequency-Uncertainty'
                                 , ymax='Frequency+Uncertainty'))
             + geom_line(fit, aes(x='x', y='y'), color='blue')
-            +ylab(r'$\Delta\nu_{Stark}$(MHZ)')
-            +xlab('E(kV cm$^{-1}$)')
+            + ylab(r'$\Delta\nu_{Stark}$(MHZ)')
+            + xlab(r'$E^2(kV cm^{-1}$)')
+            + annotate('text', x=1.0, y=np.sign(p_fit[0])*2.0, label=r'$\chi^2_{reduced}=%.3f$' % Red_chi2)
+            + annotate('text', x=1.0, y=np.sign(p_fit[0])*2.5, label=r'$f(x) = %.3f x+(%.3f)$' % (p_fit[0], p_fit[1]))
       )
 print(g1)
 
