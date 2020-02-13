@@ -19,6 +19,7 @@ from scipy.special import wofz
 from tkinter import *
 
 
+
 # Definition for selecting directory
 def dir_dialog():
     Tk().withdraw()
@@ -173,8 +174,8 @@ button2.pack()
 mainloop()
 
 
-
-
+# binwidth in ms
+b_width = 2.8
 
 
 if sel == 'Lorentzian':
@@ -206,7 +207,7 @@ if fig_save is False:
 
 # begin minimization
 print("Starting Minimization...")
-q = 1
+
 # get time when file was created, this is important for looking at indvidual scans
 for file_path in file_list:
     f = open(file_path, 'r')
@@ -246,6 +247,7 @@ volt = simpledialog.askstring(title='Voltage', prompt='Voltage used:')
 
 # if user selects to look at each scan indvidually
 if prompt1 is False:
+    q = 1
     # Use file name to get data from file, the files should be chronologically ordered at this point
     for index, row in list_file.iterrows():
         times = row['Time']
@@ -279,14 +281,14 @@ if prompt1 is False:
 
         if sel2 == 'Forward':
             x_step = df_Forward['steps']
-            y_data = df_Forward['binned PMT data']
-            y_err = df_Forward['error']
+            y_data = df_Forward['binned PMT data']/(b_width*pps)
+            y_err = df_Forward['error']/(b_width*pps)
             time_stamp = times
 
         elif sel2 == 'Backward':
             x_step = df_Backward['steps']
-            y_data = df_Backward['binned PMT data']
-            y_err = df_Backward['error']
+            y_data = df_Backward['binned PMT data']/(b_width*pps)
+            y_err = df_Backward['error']/(b_width*pps)
             time_stamp = times
 
 
@@ -305,16 +307,12 @@ if prompt1 is False:
             p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]]
 
             Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            res = pd.DataFrame({
-                '(Observed-Fit)/Error': (y_data - lorentzian(x_step, p_fit)) / y_err,
-                'Frequency (MHz)': x_step
-            })
-            # repackage the data
             repack_data = pd.DataFrame({
-                'Events': y_data,
-                'err_min': y_data - y_err,
-                'err_max': y_data + y_err,
-                'Frequency (MHz)': x_step,
+                'rate': y_data,
+                'err': y_err,
+                'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
+                'Residuals': (y_data - voigt(x_step, p_fit)),
+                'Freq': x_step,
             })
 
             the_fits = the_fits.append({
@@ -350,18 +348,13 @@ if prompt1 is False:
             p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
 
             Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            res = pd.DataFrame({
-                '(Observed-Fit)/Error': (y_data - voigt(x_step, p_fit)) / y_err,
-                'Frequency (MHz)': x_step
-            })
-            # repackage the data
             repack_data = pd.DataFrame({
-                'Events': y_data,
-                'err_min': y_data - y_err,
-                'err_max': y_data + y_err,
-                'Frequency (MHz)': x_step,
+                'rate': y_data,
+                'err': y_err,
+                'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
+                'Residuals': (y_data - voigt(x_step, p_fit)),
+                'Freq': x_step,
             })
-
             the_fits = the_fits.append({
                 'Time': time_stamp,
                 'Offset': p_fit[0],
@@ -390,18 +383,32 @@ if prompt1 is False:
             'x_fit': x_fit,
             'y_fit': y_fit
         })
-        g1 = (ggplot()
-              + ggtitle('%s Scan #%d @ %s (%s fit)' % (sel2, q, volt, sel))
-              + geom_point(repack_data, aes(x='Frequency (MHz)', y='Events'), color='red')
-              + geom_errorbar(repack_data, aes(x='Frequency (MHz)', ymin='err_min', ymax='err_max'))
-              + geom_line(fit, aes(x='x_fit', y='y_fit'), color='blue')
-              )
-        g2 = (ggplot()
-              + ggtitle('%s Scan Residual #%d @ %s (%s fit)' % (sel2, q, volt, sel))
-              + geom_point(res, aes(x='Frequency (MHz)', y='(Observed-Fit)/Error'), color='red')
-             )
-        #print(g1, g2)
 
+        df = pd.melt(repack_data, id_vars=['Freq'], value_vars=['Normalized Residuals', 'Residuals'], var_name='Type')
+
+        g1 = (ggplot()
+              + ggtitle('%s Scan #%d @ %s (%s fit) ' % (sel2, q, volt, sel))
+              + geom_point(repack_data, aes(x='Freq', y='rate'), color='red')
+              + geom_errorbar(repack_data, aes(x='Freq', ymin='rate - err', ymax='rate + err'))
+              + geom_line(fit, aes(x='x_fit', y='y_fit'), color='blue')
+              + annotate('text', x=x_fit[0] + 20, y=np.max(y_data) - 0.1 * np.max(y_data),
+                         label=r'$\chi^2_{reduced}=%.3f$' % Red_chi2)
+              + annotate('text', x=x_fit[0] + 20, y=np.max(y_data) - 0.17 * np.max(y_data),
+                         label=r'$\nu_{peak}=%.3f$ MHz' % p_fit[3])
+              + annotate('text', x=x_fit[0] + 20, y=np.max(y_data) - 0.24 * np.max(y_data),
+                         label=r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[3])
+              + ylab('Rate (kHz)')
+              + xlab('Frequency (MHz)')
+              )
+        g2 = (ggplot(df.assign(c=df['Type']), aes(x='Freq', y='value', color='Type'))
+              + ggtitle('%s Scan @ %s (%s fit) Residual Plot' % (sel2, volt, sel))
+              + geom_point()
+              + geom_path()
+              + scale_color_discrete(guide=False)
+              + facet_wrap(' ~ c', nrow=2, scales='free_y')
+              + xlab('Frequency (MHz)')
+              + ylab('')
+              )
 
         # Saving figures
         if fig_save is True:
@@ -411,9 +418,8 @@ if prompt1 is False:
                     path=fig_pwd)
         q = q + 1
 
-
     print("Minimization complete")
-    theme_set(theme_void())
+
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save_err(), sep='\t', index=False)
@@ -457,14 +463,14 @@ elif prompt1 is True:
 
     if sel2 == 'Forward':
         x_step = df_Forward['steps']
-        y_data = df_Forward['binned PMT data']
-        y_err = df_Forward['error']
+        y_data = df_Forward['binned PMT data']/(b_width*n_of_scans*pps)
+        y_err = df_Forward['error']/(b_width*n_of_scans*pps)
         time_stamp = 'N/A'
 
     elif sel2 == 'Backward':
         x_step = df_Backward['steps']
-        y_data = df_Backward['binned PMT data']
-        y_err = df_Backward['error']
+        y_data = df_Backward['binned PMT data']/(b_width*n_of_scans*pps)
+        y_err = df_Backward['error']/(b_width*n_of_scans*pps)
         time_stamp = 'N/A'
 
 
@@ -482,16 +488,12 @@ elif prompt1 is True:
         p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]]
         Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
         print(Red_chi2)
-        res = pd.DataFrame({
-            '(Observed-Fit)/Error': (y_data - lorentzian(x_step, p_fit)) / y_err,
-            'Frequency (MHz)': x_step
-        })
-        # repackage the data
         repack_data = pd.DataFrame({
-            'Events': y_data,
-            'err_min': y_data - y_err,
-            'err_max': y_data + y_err,
-            'Frequency (MHz)': x_step,
+            'rate': y_data,
+            'err': y_err,
+            'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
+            'Residuals': (y_data - voigt(x_step, p_fit)),
+            'Freq': x_step,
         })
 
         the_fits = the_fits.append({
@@ -527,16 +529,13 @@ elif prompt1 is True:
         p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
         Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
         print(Red_chi2)
-        res = pd.DataFrame({
-            '(Observed-Fit)/Error': (y_data - voigt(x_step, p_fit)) / y_err,
-            'Frequency (MHz)': x_step
-        })
         # repackage the data
         repack_data = pd.DataFrame({
-            'Events': y_data,
-            'err_min': y_data - y_err,
-            'err_max': y_data + y_err,
-            'Frequency (MHz)': x_step,
+            'rate': y_data,
+            'err':  y_err,
+            'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
+            'Residuals': (y_data - voigt(x_step, p_fit)),
+            'Freq': x_step,
         })
 
         the_fits = the_fits.append({
@@ -566,37 +565,52 @@ elif prompt1 is True:
         'x_fit': x_fit,
         'y_fit': y_fit
     })
+
+    df = pd.melt(repack_data, id_vars=['Freq'], value_vars=['Normalized Residuals', 'Residuals'], var_name='Type')
+
     g1 = (ggplot()
-          + ggtitle('%s Scan #%d @ %s (%s fit)' % (sel2 ,q, volt, sel))
-          + geom_point(repack_data, aes(x='Frequency (MHz)', y='Events'), color='red')
-          + geom_errorbar(repack_data, aes(x='Frequency (MHz)', ymin='err_min', ymax='err_max'))
+          + ggtitle('%s Scan @ %s (%s fit) Summed %d Files' % (sel2, volt, sel, n_of_scans))
+          + geom_point(repack_data, aes(x='Freq', y='rate'), color='red')
+          + geom_errorbar(repack_data, aes(x='Freq', ymin='rate - err', ymax='rate + err'))
           + geom_line(fit, aes(x='x_fit', y='y_fit'), color='blue')
-          )
-    g2 = (ggplot()
-          + ggtitle('%s Scan Residual #%d @ %s (%s fit)' % (sel2, q, volt, sel))
-          + geom_point(res, aes(x='Frequency (MHz)', y='(Observed-Fit)/Error'), color='red')
+          + annotate('text', x=x_fit[0]+20, y=np.max(y_data)-0.1*np.max(y_data),
+                     label=r'$\chi^2_{reduced}=%.3f$' % Red_chi2)
+          + annotate('text', x=x_fit[0]+20, y=np.max(y_data) - 0.17 * np.max(y_data),
+                     label=r'$\nu_{peak}=%.3f$ MHz' % p_fit[3])
+          + annotate('text', x=x_fit[0]+20, y=np.max(y_data) - 0.24 * np.max(y_data),
+                     label=r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[3])
+          + ylab('Rate (kHz)')
+          + xlab('Frequency (MHz)')
           )
 
-    #print(g1, g2)
+    g2 = (ggplot(df.assign(c=df['Type']), aes(x='Freq', y='value', color='Type'))
+          + ggtitle('%s Scan @ %s (%s fit) Residual Plot' % (sel2, volt, sel))
+          + geom_point()
+          + geom_path()
+          + scale_color_discrete(guide=False)
+          + facet_wrap(' ~ c', nrow=2, scales='free_y')
+          + xlab('Frequency (MHz)')
+          + ylab('')
+          )
+
+
+    #print(g2)
     # save figures
     if fig_save is True:
-        ggplot.save(g1, filename='%s_scan_summed_%s_fit_%s.pdf' % (sel2, sel, volt),
-                    path=fig_pwd)
-        ggplot.save(g2, filename='%s_scan_residuals_summed_%s_fit_%s.pdf' % (sel2, sel, volt),
-                    path=fig_pwd)
+       save_as_pdf_pages([g1, g2], filename='%s_scan_summed_%s_fit_%s.pdf' % (sel2, sel, volt),  path=fig_pwd)
     #save minuit output to files
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save_err(), sep='\t', index=False)
 
 
     # Saving Stark Data
-    P = np.float64(the_fits['Peak Position'])
+    '''P = np.float64(the_fits['Peak Position'])
     E = np.float64(the_error['Peak Position err'])
     stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
     file_name = "Stark_data_%s.txt" % sel2
     fn = open(file_name, 'a+')
     fn.write(stark_data+'\n')
-    fn.close()
+    fn.close()'''
 
 
 exit()
