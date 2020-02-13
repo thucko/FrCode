@@ -258,7 +258,8 @@ print("Starting Minimization...")
 # if user selects to look at each scan individually
 if prompt1 is False:
     q = 1
-    figures = []
+    fig_save = file_save_plt()
+    pdf = PdfPages(fig_save)
     # Use file name to get data from file, the files should be chronologically ordered at this point
     for index, row in list_file.iterrows():
         times = row['Time']
@@ -301,8 +302,6 @@ if prompt1 is False:
             y_data = df_Backward['binned PMT data']/(b_width*pps)
             y_err = df_Backward['error']/(b_width*pps)
             time_stamp = times
-
-
 
         p1 = Parameters(y_data, x_step,sel)  # Generate initial parameter guesses for scans
 
@@ -421,37 +420,15 @@ if prompt1 is False:
         ax3.plot(repack_data['Freq'], repack_data['Residuals'], '-o', color='#D433FF')
         fig.subplots_adjust(left=0.06, bottom=0.08, right=0.95, top=0.95, wspace=0.07, hspace=0.25)
         # Saving figures
-
+        pdf.savefig(fig)
+        plt.close()
         q = q + 1
-
+    pdf.close()
     print("Minimization complete")
-
-    fig_save = file_save_plt()
-    if fig_save is None:
-        None
-    else:
-        with PdfPages(fig_save) as pdf:
-            for i in plt.get_fignums():
-                plt.figure(i)
-                pdf.savefig()
-                plt.close()
 
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save_err(), sep='\t', index=False)
-
-
-    save_stark = file_save_stark()
-    if save_stark is None:
-        None
-    else:
-        P = np.float64(the_fits['Peak Position'])
-        E = np.float64(the_error['Peak Position err'])
-        stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
-        file_name = "Stark_data_%s.txt" % sel2
-        fn = open(file_name, 'a+')
-        fn.write(stark_data + '\n')
-        fn.close()
 
 
 
@@ -635,13 +612,13 @@ elif prompt1 is True:
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save_err(), sep='\t', index=False)
     # Saving Stark Data\
-P = np.float64(the_fits['Peak Position'])
-E = np.float64(the_error['Peak Position err'])
-stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
-file_name = "Stark_%s_%s_%s.txt" % (sel2, sel1, sel3)
-fn = open(file_name, 'a+')
-fn.write(stark_data + '\n')
-fn.close()
+    P = np.float64(the_fits['Peak Position'])
+    E = np.float64(the_error['Peak Position err'])
+    stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
+    file_name = "Stark_%s_%s_%s.txt" % (sel2, sel, sel3)
+    fn = open(file_name, 'a+')
+    fn.write(stark_data + '\n')
+    fn.close()
 
 
 exit()
