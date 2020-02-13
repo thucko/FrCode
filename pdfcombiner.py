@@ -9,6 +9,7 @@ from tkinter.filedialog import askopenfilenames
 from tkinter.filedialog import asksaveasfile
 from tkinter import simpledialog
 from tkinter import *
+import os
 
 
 def save_file():
@@ -24,11 +25,12 @@ files = askopenfilenames(title='Choose Files')
 merger = PdfFileMerger()
 for pdf in files:
     merger.append(pdf)
-
-
 root = Tk()
 root.withdraw()
 path = simpledialog.askstring(title='Save File', prompt='Enter File Name:')
 path = path+'.pdf'
 merger.write(path)
 merger.close()
+
+for pdf in files:
+    os.remove(pdf)
