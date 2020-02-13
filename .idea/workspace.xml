@@ -18,14 +18,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="FrPNC_Spectra_fitter_v5.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="FrPNC_Spectra_fitter_v5.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9590">
-              <caret line="644" lean-forward="true" selection-start-line="644" selection-end-line="644" />
-              <folding>
-                <element signature="e#148#166#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="4947">
+              <caret line="304" lean-forward="true" selection-start-line="304" selection-end-line="304" />
             </state>
           </provider>
         </entry>
@@ -33,8 +30,8 @@
       <file leaf-file-name="FrPNC_Stark_shift.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/FrPNC_Stark_shift.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-935">
-              <caret line="14" column="21" lean-forward="true" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+            <state relative-caret-position="17">
+              <caret line="14" column="21" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -42,20 +39,8 @@
       <file leaf-file-name="scope_waveform.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scope_waveform.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="612">
+            <state relative-caret-position="1105">
               <caret line="70" column="23" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ggploter.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ggploter.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-953">
-              <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
-              <folding>
-                <element signature="e#40#58#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -81,16 +66,16 @@
         <option value="$PROJECT_DIR$/pdfcombiner.py" />
         <option value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py" />
         <option value="$PROJECT_DIR$/ggploter.py" />
-        <option value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py" />
         <option value="$PROJECT_DIR$/FrPNC_Stark_shift.py" />
+        <option value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1197" />
-    <option name="y" value="220" />
-    <option name="width" value="1202" />
-    <option name="height" value="870" />
+    <option name="x" value="-9" />
+    <option name="y" value="-9" />
+    <option name="width" value="1938" />
+    <option name="height" value="1098" />
   </component>
   <component name="ProjectId" id="1XRR729y1ZadFoMBOvChmPvz1es" />
   <component name="ProjectView">
@@ -114,7 +99,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/peak_plotter.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -134,25 +119,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.FrPNC_Stark_Shift">
-    <configuration name="FrPNC_Spectra_fitter" type="PythonConfigurationType" factoryName="Python">
-      <module name="FrCode" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="C:\Users\hucko\AppData\Local\Programs\Python\Python37\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
+  <component name="RunManager" selected="Python.FrPNC_Spectra_fitter_v5">
     <configuration name="FrPNC_Spectra_fitter_v5" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -189,7 +156,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="Quick_stool" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="peak_plotter" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -201,43 +168,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Quick_stool.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="ggploter" type="PythonConfigurationType" factoryName="Python">
-      <module name="FrCode" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="C:\Users\hucko\AppData\Local\Programs\Python\Python37\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ggploter.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="pdfcombiner" type="PythonConfigurationType" factoryName="Python">
-      <module name="FrCode" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="C:\Users\hucko\AppData\Local\Programs\Python\Python37\python.exe" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pdfcombiner.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/peak_plotter.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -262,13 +193,10 @@
       <option name="MODULE_MODE" value="false" />
     </configuration>
     <list>
-      <item itemvalue="Python.FrPNC_Spectra_fitter" />
       <item itemvalue="Python.FrPNC_Spectra_fitter_v5" />
       <item itemvalue="Python.FrPNC_Stark_Shift" />
       <item itemvalue="Python.scope_waveform" />
-      <item itemvalue="Python.Quick_stool" />
-      <item itemvalue="Python.ggploter" />
-      <item itemvalue="Python.pdfcombiner" />
+      <item itemvalue="Python.peak_plotter" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -294,18 +222,18 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1208" y="-8" width="1216" height="1936" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="878" extended-state="6" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.070458405" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49966952" weight="0.32884097" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50033045" side_tool="true" weight="0.32884097" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49966952" weight="0.32884097" />
       <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49966952" weight="0.32884097" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49966952" weight="0.32536152" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49966952" weight="0.32479784" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.4990086" weight="0.32884097" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.40489432" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.40431267" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -316,19 +244,19 @@
     </layout>
     <layout-to-restore>
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49966952" visible="true" weight="0.32536152" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.070458405" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49966952" weight="0.32884097" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49966952" visible="true" weight="0.32536152" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Python Console" order="7" sideWeight="0.49966952" weight="0.32884097" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.40489432" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4990086" weight="0.32884097" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50033045" side_tool="true" weight="0.32884097" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.49966952" weight="0.32884097" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -372,17 +300,57 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="33" />
+      <option name="time" value="34" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10404">
+          <caret line="612" column="14" lean-forward="true" selection-start-line="612" selection-start-column="14" selection-end-line="612" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FrPNC_Stark_shift.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="21" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scope_waveform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1105">
+          <caret line="70" column="23" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10727">
+          <caret line="644" selection-start-line="644" selection-end-line="644" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FrPNC_Stark_shift.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="21" lean-forward="true" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scope_waveform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1105">
+          <caret line="70" column="23" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py" />
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
           <caret line="30" selection-start-line="30" selection-end-line="34" selection-end-column="12" />
-          <folding>
-            <element signature="e#148#166#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -400,20 +368,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ggploter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2448">
-          <caret line="152" column="109" selection-start-line="152" selection-start-column="91" selection-end-line="152" selection-end-column="109" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py" />
     <entry file="file://$PROJECT_DIR$/pdfcombiner.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
           <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
-          <folding>
-            <element signature="e#38#70#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -421,9 +380,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10285">
           <caret line="605" column="23" selection-start-line="605" selection-start-column="23" selection-end-line="605" selection-end-column="23" />
-          <folding>
-            <element signature="e#148#166#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -441,9 +397,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ggploter.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py" />
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9724">
@@ -458,9 +412,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ggploter.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py" />
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v4.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9724">
@@ -507,9 +459,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
           <caret line="21" selection-start-line="21" selection-end-line="21" />
-          <folding>
-            <element signature="e#38#70#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -524,43 +473,28 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="831">
           <caret line="601" column="4" lean-forward="true" selection-start-line="601" selection-start-column="4" selection-end-line="602" selection-end-column="60" />
-          <folding>
-            <element signature="e#148#166#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/scope_waveform.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
+        <state relative-caret-position="1105">
           <caret line="70" column="23" selection-start-line="70" selection-start-column="23" selection-end-line="70" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ggploter.py" />
+    <entry file="file://$PROJECT_DIR$/FrPNC_Stark_shift.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="14" column="21" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9590">
-          <caret line="644" lean-forward="true" selection-start-line="644" selection-end-line="644" />
-          <folding>
-            <element signature="e#148#166#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/FrPNC_Stark_shift.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-935">
-          <caret line="14" column="21" lean-forward="true" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ggploter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-953">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
-          <folding>
-            <element signature="e#40#58#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="4947">
+          <caret line="304" lean-forward="true" selection-start-line="304" selection-end-line="304" />
         </state>
       </provider>
     </entry>
