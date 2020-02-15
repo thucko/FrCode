@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
+import matplotlib.gridspec as gridspec
 
 def lorentzian(x, p, s0):
     # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2)
@@ -14,28 +15,38 @@ def lorentzian(x, p, s0):
 
 
 laser = (266.65-15.0)
-x = np.arange(-(laser+0.11), (laser+0.11), 0.01)
+x = np.arange(-(laser+0.1), (laser+0.2), 0.1)
 p = [1, 6.065, 0]
 s0 = [0.1, 1, 10, 100]
-section = np.arange(laser, laser+0.1, 0.001)
+section = np.arange(laser, laser+0.105, 0.01)
 
 
-area0 = quad(lorentzian, x[0], x[len(x)-1], args=(p, s0[0]))
-area1 = quad(lorentzian, x[0], x[len(x)-1], args=(p, s0[1]))
-area2 = quad(lorentzian, x[0], x[len(x)-1], args=(p, s0[2]))
-area3 = quad(lorentzian, x[0], x[len(x)-1], args=(p, s0[3]))
+area0 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[0]))
+area1 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[1]))
+area2 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[2]))
+area3 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[3]))
 
 
-print(area0[0], area1[0], area2[0], area3[0])
-'''a0 = np.trapz(norm_L0, dx=1)
-a1 = np.trapz(norm_L1, dx=1)
-a2 = np.trapz(norm_L2, dx=1)
-a3 = np.trapz(norm_L3, dx=1)
+print(area0[0]*100, area1[0]*100, area2[0]*100, area3[0]*100)
 
-print(a0*100, a1*100, a2*100, a3*100)'''
 
 plt.style.use('ggplot')
-plt.plot(x, lorentzian(x, p, s0[0]), label=r'$s0=%.2f$' %s0[0])
-plt.fill_between(section, lorentzian(section, p, s0[0]), color='grey')
-plt.legend()
+gs = gridspec.GridSpec(2, 2)
+fig = plt.figure(figsize=(16, 9))
+ax1 = fig.add_subplot(gs[0, :])
+ax1.set_title(r'Normalized Lorentzian with saturation parameter $s0$')
+ax1.set_ylabel('Probability')
+ax1.plot(x, lorentzian(x, p, s0[0]), label=r'$s0=%.2f$' % s0[0])
+ax1.plot(x, lorentzian(x, p, s0[1]), label=r'$s0=%.2f$' % s0[1])
+ax1.plot(x, lorentzian(x, p, s0[2]), label=r'$s0=%.2f$' % s0[2])
+ax1.plot(x, lorentzian(x, p, s0[3]), label=r'$s0=%.2f$' % s0[3])
+ax2 = fig.add_subplot(gs[1, :])
+ax2.plot(x, lorentzian(x, p, s0[0]), label=r'$s0=%.2f$' % s0[0])
+ax2.plot(x, lorentzian(x, p, s0[1]), label=r'$s0=%.2f$' % s0[1])
+ax2.plot(x, lorentzian(x, p, s0[2]), label=r'$s0=%.2f$' % s0[2])
+ax2.plot(x, lorentzian(x, p, s0[3]), label=r'$s0=%.2f$' % s0[3])
+ax2.fill_between(section, lorentzian(section, p, s0[0]), alpha=0.5)
+ax2.fill_between(section, lorentzian(section, p, s0[1]), alpha=0.35)
+ax2.fill_between(section, lorentzian(section, p, s0[2]), alpha=0.25)
+ax2.fill_between(section, lorentzian(section, p, s0[3]), alpha=0.15)
 plt.show()
