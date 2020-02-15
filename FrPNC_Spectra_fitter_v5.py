@@ -21,8 +21,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from scipy.special import wofz
 from tkinter import *
 import matplotlib.pyplot as plt
+import warnings
 
-
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 # Definition for selecting directory
@@ -100,7 +101,7 @@ def voigt(x, p):
     gamma = p[2]/2
     z = ((x-p[3]) + 1j*gamma)/(sigma*np.sqrt(2))
     decay = (np.exp(-x / p[4]))
-    num = wofz(z).real
+    num = np.real(wofz(z))
     dem = sigma*np.sqrt(2*np.pi)
     V = p[0]+decay*p[1]*(num/dem)
     return V
@@ -303,12 +304,12 @@ if prompt1 is False:
             y_err = df_Backward['error']/(b_width*pps)
             time_stamp = times
 
-        p1 = Parameters(y_data, x_step,sel)  # Generate initial parameter guesses for scans
+        p1 = Parameters(y_data, x_step, sel)  # Generate initial parameter guesses for scans
 
         # If Lorentzain function is selected for fitting
         if sel == 'Lorentzian':
             #Use for lorentzian fit
-            m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1),
+            m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
                                        limit=(None, None, (2, 6), None, (0, 500)),
                                        fix=(False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad() # This is minimization strategy
@@ -350,7 +351,7 @@ if prompt1 is False:
         elif sel == 'Voigt':
 
             # use for Voigt fit
-            m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
+            m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1, 0.001),
                                        limit=(None, None, (3, 6), None, (17, 500), (0.6, 4)),
                                        fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad()  # This is minimization strategy
@@ -387,7 +388,6 @@ if prompt1 is False:
             }, ignore_index=True)
             x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
             y_fit = voigt(x_fit, p_fit)
-
 
         fit = pd.DataFrame({
             'x_fit': x_fit,
@@ -429,8 +429,6 @@ if prompt1 is False:
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
     the_error.to_csv(file_save_err(), sep='\t', index=False)
-
-
 
 # if user selects to sum all the scans together
 elif prompt1 is True:
@@ -485,7 +483,7 @@ elif prompt1 is True:
     # If Lorentzain function is selected for fitting
     if sel == 'Lorentzian':
         # Use for lorentzian fit
-        m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1),
+        m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
                                    limit=(None, None, (2, 6), None, (0, 500)),
                                    fix=(False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
@@ -526,7 +524,7 @@ elif prompt1 is True:
     # If Voigt function is selected for fitting
     elif sel == 'Voigt':
 
-        m = Minuit.from_array_func(chi2, p1, error=(100, 1, 0.001, 0.001, .1, 0.001),
+        m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1, 0.001),
                                    limit=(None, None, (3, 6), None, (17, 500), (0.6, 6)),
                                    fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
