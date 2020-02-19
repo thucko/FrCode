@@ -97,10 +97,10 @@ def lorentzian(x, p_lorentzian):
 # Voigt profile
 # see https://en.wikipedia.org/wiki/Voigt_profile for info on the Voigt profile
 def voigt(x, p):
-    sigma = p[5]/(2*np.sqrt(2*np.log(2)))
+    sigma = p[3]/(2*np.sqrt(2*np.log(2)))
     gamma = p[2]/2
-    z = ((x-p[3]) + 1j*gamma)/(sigma*np.sqrt(2))
-    decay = (np.exp(-x / p[4]))
+    z = ((x-p[4]) + 1j*gamma)/(sigma*np.sqrt(2))
+    decay = (np.exp(-x / p[5]))
     num = np.real(wofz(z))
     dem = sigma*np.sqrt(2*np.pi)
     V = p[0]+decay*p[1]*(num/dem)
@@ -112,11 +112,11 @@ def Parameters(data, x, f):
     # Lorentzain: p = [Offset, Height, FWHM, Center, lifetime]
     # Voigt: p = [Offset, Height, FWHM_L, FWHM_G, Center, Liftime]
     if f == 'Lorentzian':
-        p = [np.min(data), np.max(data)-np.min(data), 3.5, np.argmax(np.array(data)), 50]
+        p = [np.min(data), (np.max(data)-np.min(data)), 3.5, np.argmax(np.array(data)), 50]
         return p
     elif f == 'Voigt':
 
-        p = [np.min(data), np.max(data), 3.6, x[np.argmax(np.array(data))], 50, 1]
+        p = [np.min(data), 6*np.max(data), 3.6, 1, x[np.argmax(np.array(data))], 350]
         return p
 
 
@@ -310,7 +310,7 @@ if prompt1 is False:
         if sel == 'Lorentzian':
             #Use for lorentzian fit
             m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
-                                       limit=(None, None, (2, 6), None, (0, 500)),
+                                       limit=(None, None, (2, 6), None, None),
                                        fix=(False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad() # This is minimization strategy
             #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
@@ -351,9 +351,9 @@ if prompt1 is False:
         elif sel == 'Voigt':
 
             # use for Voigt fit
-            m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1, 0.001),
-                                       limit=(None, None, (3, 6), None, (17, 500), (0.6, 4)),
-                                       fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
+            m = Minuit.from_array_func(chi2, p1, error=(10, 10, 0.01, 0.001, .1, 1),
+                                   limit=(None, None, (3, 6), (0, 0.9), None, (17, 500)),
+                                   fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad()  # This is minimization strategy
             p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
             p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
@@ -371,9 +371,9 @@ if prompt1 is False:
                 'Offset': p_fit[0],
                 'Peak Height': p_fit[1],
                 'FWHM_L': p_fit[2],
-                'FWHM_G': p_fit[5],
-                'Peak Position': p_fit[3],
-                'Lifetime': p_fit[4],
+                'FWHM_G': p_fit[3],
+                'Peak Position': p_fit[4],
+                'Lifetime': p_fit[5],
                 'Reduced Chi Squared': Red_chi2
             }, ignore_index=True)
 
@@ -382,9 +382,9 @@ if prompt1 is False:
                 'Offset err': p_err[0],
                 'Peak Height err': p_err[1],
                 'FWHM_L err': p_err[2],
-                'FWHM_G err': p_err[5],
-                'Peak Position err': p_err[3],
-                'Lifetime err': p_err[4]
+                'FWHM_G err': p_err[3],
+                'Peak Position err': p_err[4],
+                'Lifetime err': p_err[5]
             }, ignore_index=True)
             x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
             y_fit = voigt(x_fit, p_fit)
@@ -400,9 +400,9 @@ if prompt1 is False:
         ax1 = fig.add_subplot(gs[0, :])
         ax1.text(x_fit[0] + 20, np.max(y_data) - 0.1 * np.max(y_data), r'$\chi^2_{reduced}=%.3f$' % Red_chi2,
                  fontsize=14)
-        ax1.text(x_fit[0] + 20, np.max(y_data) - 0.17 * np.max(y_data), r'$\nu_{peak}=%.3f$ MHz' % p_fit[3],
+        ax1.text(x_fit[0] + 20, np.max(y_data) - 0.17 * np.max(y_data), r'$\nu_{peak}=%.3f$ MHz' % p_fit[4],
                  fontsize=14)
-        ax1.text(x_fit[0] + 20, np.max(y_data) - 0.24 * np.max(y_data), r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[3],
+        ax1.text(x_fit[0] + 20, np.max(y_data) - 0.24 * np.max(y_data), r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[4],
                  fontsize=14)
         ax1.set_title('%s Scan #%d @ %s (%s fit) ' % (sel2, q, volt, sel), fontsize=20)
         ax1.set_xlabel('Frequency (MHz)', fontsize=16)
@@ -524,8 +524,8 @@ elif prompt1 is True:
     # If Voigt function is selected for fitting
     elif sel == 'Voigt':
 
-        m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1, 0.001),
-                                   limit=(None, None, (3, 6), None, (17, 500), (0.6, 6)),
+        m = Minuit.from_array_func(chi2, p1, error=(1, 10, 0.01, 0.01, 1, 10),
+                                   limit=(None, None, (3, 6), None, None, (17, 500)),
                                    fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
         #       [Offset        , Height        , FWHM_L         , Center        , lifetime ,     FWHM_G        ]
@@ -547,9 +547,9 @@ elif prompt1 is True:
             'Offset': p_fit[0],
             'Peak Height': p_fit[1],
             'FWHM_L': p_fit[2],
-            'FWHM_G': p_fit[5],
-            'Peak Position': p_fit[3],
-            'Lifetime': p_fit[4],
+            'FWHM_G': p_fit[3],
+            'Peak Position': p_fit[4],
+            'Lifetime': p_fit[5],
             'Reduced Chi Squared': Red_chi2
         }, ignore_index=True)
 
@@ -558,9 +558,9 @@ elif prompt1 is True:
             'Offset err': p_err[0],
             'Peak Height err': p_err[1],
             'FWHM_L err': p_err[2],
-            'FWHM_G err': p_err[5],
-            'Peak Position err': p_err[3],
-            'Lifetime err': p_err[4]
+            'FWHM_G err': p_err[3],
+            'Peak Position err': p_err[4],
+            'Lifetime err': p_err[5]
         }, ignore_index=True)
         x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
         y_fit = voigt(x_fit, p_fit)
@@ -577,8 +577,8 @@ elif prompt1 is True:
 
     ax1 = fig.add_subplot(gs[0, :])
     ax1.text(x_fit[0]+20, np.max(y_data)-0.1*np.max(y_data), r'$\chi^2_{reduced}=%.3f$' % Red_chi2, fontsize=14)
-    ax1.text(x_fit[0] + 20, np.max(y_data) - 0.17 * np.max(y_data), r'$\nu_{peak}=%.3f$ MHz' % p_fit[3], fontsize=14)
-    ax1.text(x_fit[0] + 20, np.max(y_data) - 0.24 * np.max(y_data), r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[3], fontsize=14)
+    ax1.text(x_fit[0] + 20, np.max(y_data) - 0.17 * np.max(y_data), r'$\nu_{peak}=%.3f$ MHz' % p_fit[4], fontsize=14)
+    ax1.text(x_fit[0] + 20, np.max(y_data) - 0.24 * np.max(y_data), r'$\delta\nu_{peak}=%.3f$ MHz' % p_err[4], fontsize=14)
     ax1.set_title('%s Scan @ %s (%s fit) Summed %d Files' % (sel2, volt, sel, n_of_scans), fontsize=20)
     ax1.set_xlabel('Frequency (MHz)', fontsize=16)
     ax1.set_ylabel('Rate (kHz)', fontsize=16)
