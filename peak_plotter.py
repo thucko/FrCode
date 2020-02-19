@@ -81,10 +81,10 @@ root.withdraw()
 volt = simpledialog.askstring(title='Voltage', prompt='Voltage used:')
 
 print('Load peak positions')
-pos = np.genfromtxt(file_dialog(), dtype='float64', usecols=5,
+pos = np.genfromtxt(file_dialog(), dtype='float64', usecols=6,
                     skip_header=True)
 print('Load peak positions uncertainties')
-err = np.genfromtxt(file_dialog(), dtype='float64', usecols=5,
+err = np.genfromtxt(file_dialog(), dtype='float64', usecols=6,
                     skip_header=True)
 print('Load reduced chi square values')
 chi = np.genfromtxt(file_dialog(), dtype='float64', usecols=7,
