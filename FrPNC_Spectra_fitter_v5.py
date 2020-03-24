@@ -116,7 +116,7 @@ def Parameters(data, x, f):
         return p
     elif f == 'Voigt':
 
-        p = [np.min(data), 6*np.max(data), 3.6, 1, x[np.argmax(np.array(data))], 350]
+        p = [np.min(data), np.max(data), 3.6, 1, x[np.argmax(np.array(data))], 350]
         return p
 
 
@@ -355,6 +355,7 @@ if prompt1 is False:
                                    limit=(None, None, (3, 6), (0, 0.9), None, (17, 500)),
                                    fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
             m.migrad()  # This is minimization strategy
+            #       [Offset        , Height        , FWHM_L        , FWHM_G       , Center         , liftime       ]
             p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
             p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
 
@@ -441,7 +442,7 @@ elif prompt1 is True:
     shape[:0] = [len(data)]
     data1 = np.concatenate(data).reshape(shape)
     y = data1.sum(axis=0)
-    first_p = 2
+    first_p = 4
     last_p = 8
     pps = last_p - first_p
     data_binned = []
@@ -454,27 +455,27 @@ elif prompt1 is True:
 
     x = np.arange(0, len(data_binned), 1)
     df_Forward = pd.DataFrame({
-        'binned PMT data': data_binned[0:80],
+        'binned PMT data': data_binned[0:80]/(b_width*n_of_scans*pps),
         'steps': x[0:80],
-        'error': data_binned[0:80] ** 0.5,
+        'error': np.sqrt(data_binned[0:80])/(b_width*n_of_scans*pps),
     })
     df_Backward = pd.DataFrame({
-        'binned PMT data': data_binned[80:159],
+        'binned PMT data': data_binned[80:159]/(b_width*n_of_scans*pps),
         'steps': x[80:159],
-        'error': data_binned[80:159] ** 0.5,
+        'error': np.sqrt(data_binned[80:159])/(b_width*n_of_scans*pps),
     })
     ''' Now to minimize the scans'''
 
     if sel2 == 'Forward':
         x_step = df_Forward['steps']
-        y_data = df_Forward['binned PMT data']/(b_width*n_of_scans*pps)
-        y_err = df_Forward['error']/(b_width*n_of_scans*pps)
+        y_data = df_Forward['binned PMT data']
+        y_err = df_Forward['error']
         time_stamp = 'N/A'
 
     elif sel2 == 'Backward':
         x_step = df_Backward['steps']
-        y_data = df_Backward['binned PMT data']/(b_width*n_of_scans*pps)
-        y_err = df_Backward['error']/(b_width*n_of_scans*pps)
+        y_data = df_Backward['binned PMT data']
+        y_err = df_Backward['error']
         time_stamp = 'N/A'
 
 
@@ -484,7 +485,7 @@ elif prompt1 is True:
     if sel == 'Lorentzian':
         # Use for lorentzian fit
         m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
-                                   limit=(None, None, (2, 6), None, (0, 500)),
+                                   limit=(None, None, None, None, None),
                                    fix=(False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
         #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
@@ -528,7 +529,7 @@ elif prompt1 is True:
                                    limit=(None, None, (3, 6), None, None, (17, 500)),
                                    fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
         m.migrad()  # This is minimization strategy
-        #       [Offset        , Height        , FWHM_L         , Center        , lifetime ,     FWHM_G        ]
+        #       [Offset        , Height        , FWHM_L         , FWHM_G        , Center ,     liftime        ]
         p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
         p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
         Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
