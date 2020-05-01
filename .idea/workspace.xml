@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="45b45242-9fdc-4543-894e-8eb1eff4d35f" name="Default" comment="" />
+    <list default="true" id="45b45242-9fdc-4543-894e-8eb1eff4d35f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,15 +29,15 @@
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Cavity_coupling.py" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v6.py" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\hucko\Documents\GitHub\FrCode" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Cavity_coupling">
+  <component name="RunManager" selected="Python.FrPNC_Spectra_fitter_v6">
     <configuration name="Cavity_build_specs" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -112,6 +114,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v5.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="FrPNC_Spectra_fitter_v6" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="FrCode" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\Tim\AppData\Local\Programs\Python\Python37\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/FrPNC_Spectra_fitter_v6.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -249,6 +272,7 @@
     <list>
       <item itemvalue="Python.Cavity_build_specs" />
       <item itemvalue="Python.Cavity_coupling" />
+      <item itemvalue="Python.FrPNC_Spectra_fitter_v6" />
       <item itemvalue="Python.Fitting Test" />
       <item itemvalue="Python.FrPNC_Spectra_fitter_v5" />
       <item itemvalue="Python.FrPNC_Stark_Shift" />
@@ -307,25 +331,34 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state x="882" y="441" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1585070175094">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state x="882" y="429" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1588353001020">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state x="882" y="429" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400@0.0.2560.1400" timestamp="1588353001020" />
     <state x="882" y="441" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1585070175094" />
-    <state width="2539" height="290" key="GridCell.Tab.0.bottom" timestamp="1585156403591">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state x="1207" y="529" key="FileChooserDialogImpl" timestamp="1588352992034">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state x="1207" y="529" key="FileChooserDialogImpl/0.0.2560.1400@0.0.2560.1400" timestamp="1588352992034" />
+    <state width="2042" height="201" key="GridCell.Tab.0.bottom" timestamp="1588355268526">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2042" height="201" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="2539" height="290" key="GridCell.Tab.0.center" timestamp="1585156403591">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state width="2042" height="201" key="GridCell.Tab.0.center" timestamp="1588355268526">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state width="2042" height="201" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="2539" height="290" key="GridCell.Tab.0.left" timestamp="1585156403591">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state width="2042" height="201" key="GridCell.Tab.0.left" timestamp="1588355268526">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state width="2042" height="201" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="2539" height="290" key="GridCell.Tab.0.right" timestamp="1585156403591">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state width="2042" height="201" key="GridCell.Tab.0.right" timestamp="1588355268526">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state width="2042" height="201" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
     <state width="2539" height="508" key="GridCell.Tab.1.bottom" timestamp="1585091784906">
       <screen x="0" y="0" width="2560" height="1440" />
@@ -343,9 +376,10 @@
       <screen x="0" y="0" width="2560" height="1440" />
     </state>
     <state width="2539" height="508" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585091784906" />
-    <state x="929" y="428" key="SettingsEditor" timestamp="1586280632441">
-      <screen x="0" y="0" width="2560" height="1440" />
+    <state x="929" y="416" key="SettingsEditor" timestamp="1588355223522">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
+    <state x="929" y="416" key="SettingsEditor/0.0.2560.1400@0.0.2560.1400" timestamp="1588355223522" />
     <state x="929" y="428" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1586280632441" />
     <state x="1123" y="610" key="com.intellij.ide.util.TipDialog" timestamp="1581791005773">
       <screen x="0" y="0" width="2560" height="1440" />
