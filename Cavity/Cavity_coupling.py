@@ -1,3 +1,8 @@
+'''Cavity_coupling
+Author: Tim Hucko
+used for determining lens placement for coupling light into an optical cavity
+'''
+
 import numpy as np
 from sympy import Symbol, im, I, Abs, sqrt
 from sympy.physics.optics import *
