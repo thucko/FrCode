@@ -1,3 +1,8 @@
+'''Cavity_build_specs
+Authour: Tim Hucko
+Used to calculate optical cavity parameters.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
