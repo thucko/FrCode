@@ -1,3 +1,7 @@
+''' Fitter_test_tool
+Author: Tim Hucko
+Used for testing fitting routines using fake data
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
