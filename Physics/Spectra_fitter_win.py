@@ -22,6 +22,7 @@ from scipy.special import wofz
 from tkinter import *
 import matplotlib.pyplot as plt
 import warnings
+import time
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -220,29 +221,29 @@ for file_path in file_list:
     f = open(file_path, 'r')
     cont = f.readlines()
     start_time = cont[6]
-    time = start_time[13:28]
-    time = time.replace(' ', '')
+    _time = start_time[13:28]
+    _time = _time.replace(' ', '')
     # pm_am = time.find('PM')
-    if (time.endswith('PM')):
+    if (_time.endswith('PM')):
 
-        if time[0:2] == '12':
-            time = time.replace('PM', '')
+        if _time[0:2] == '12':
+            _time= _time.replace('PM', '')
         else:
-            time = time.replace('PM', '')
-            time = str(0) + time
-            hour = int(time[0:2])
+            _time = _time.replace('PM', '')
+            _time = str(0) + _time
+            hour = int(_time[0:2])
             hour = hour + 12
-            time = str(hour) + time[2::]
-    elif (time.endswith('AM')):
-        time = time.replace('AM', '')
-        if time[0:2] == '12':
-            time = time.replace(time[0:2], '00')
+            _time = str(hour) + _time[2::]
+    elif (_time.endswith('AM')):
+        _time = _time.replace('AM', '')
+        if _time[0:2] == '12':
+            _time = _time.replace(_time[0:2], '00')
         else:
-            if (len(time) != 12):
-                time = str(0) + time
+            if (len(_time) != 12):
+                _time = str(0) + _time
     f.close()
     list_file = list_file.append({
-        'Time': time,
+        'Time': _time,
         'File path': file_path
     }, ignore_index=True)
 
@@ -256,6 +257,7 @@ volt = simpledialog.askstring(title='Voltage', prompt='Voltage used:')
 
 # begin minimization
 print("Starting Minimization...")
+begin = time.time()
 # if user selects to look at each scan individually
 if prompt1 is False:
     q = 1
@@ -312,6 +314,7 @@ if prompt1 is False:
             m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
                                        limit=(None, None, (2, 6), None, None),
                                        fix=(False, False, False, False, False), errordef=1, pedantic=False)
+            m.strategy = 0
             m.migrad() # This is minimization strategy
             #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
             p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"]]
@@ -321,8 +324,8 @@ if prompt1 is False:
             repack_data = pd.DataFrame({
                 'rate': y_data,
                 'err': y_err,
-                'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
-                'Residuals': (y_data - voigt(x_step, p_fit)),
+                'Normalized Residuals': (y_data - lorentzian(x_step, p_fit)) / y_err,
+                'Residuals': (y_data - lorentzian(x_step, p_fit)),
                 'Freq': x_step,
             })
 
@@ -425,7 +428,9 @@ if prompt1 is False:
         plt.close()
         q = q + 1
     pdf.close()
+    fin = time.time()
     print("Minimization complete")
+    print("Time: ", fin - begin, "s")
 
     # save the data and errors to csv files
     the_fits.to_csv(file_save(), sep='\t', index=False)
