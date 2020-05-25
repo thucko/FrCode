@@ -1,15 +1,18 @@
 '''
-Version 5
 - Using Matplotlib for subplots of data and residuals
 - plots now contain normalized residuals and reqular residuals
 -
 Author: Tim Hucko
 
 '''
+
+import numpy as onp
 from jax.config import config
 config.update("jax_enable_x64", True)
 import jax.numpy as np
 from jax import jit, grad
+from jax.scipy.special import erfc
+from jax.lax import complex
 import pandas as pd
 from tkinter import simpledialog
 from tkinter.filedialog import askdirectory
@@ -20,7 +23,7 @@ import glob
 from iminuit import Minuit
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
-from scipy.special import wofz
+#from scipy.special import wofz
 from tkinter import *
 import matplotlib.pyplot as plt
 import warnings
@@ -63,8 +66,6 @@ def file_save_plt():
 
 
 
-
-
 # Definition for choosing a file
 def file_dialog():
     Tk().withdraw()
@@ -89,26 +90,26 @@ def sum_scan():
 
 # Lorentzian function
 def lorentzian(x, p_lorentzian):
-    # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2)
-    # Including and exponetial decay
-    numerator = (p_lorentzian[2] / 2)**2
+     # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2)
+     # Including and exponetial decay
+    numerator = (p_lorentzian[2] / 2) ** 2
     decay = (np.exp(-x / p_lorentzian[4]))
     denominator1 = ((x - (p_lorentzian[3])) ** 2 + (p_lorentzian[2] / 2) ** 2)
     L = p_lorentzian[0] + decay * p_lorentzian[1] * (numerator / denominator1)
     return L
 
-
 # Voigt profile
-# see https://en.wikipedia.org/wiki/Voigt_profile for info on the Voigt profile
+ # see https://en.wikipedia.org/wiki/Voigt_profile for info on the Voigt profile
 def voigt(x, p):
-    sigma = p[3]/(2*np.sqrt(2*np.log(2)))
-    gamma = p[2]/2
-    z = ((x-p[4]) + 1j*gamma)/(sigma*np.sqrt(2))
-    decay = (np.exp(-x / p[5]))
-    num = np.real(wofz(z))
-    dem = sigma*np.sqrt(2*np.pi)
-    V = p[0]+decay*p[1]*(num/dem)
-    return V
+        sigma = p[3] / (2 * np.sqrt(2 * np.log(2)))
+        gamma = p[2] / 2
+        z = complex(x - p[4], gamma) / (sigma * np.sqrt(2))
+        faddeeva = np.exp(-z ** 2) * erfc(-1j * z)
+        decay = (np.exp(-x / p[5]))
+        num = np.real(faddeeva)
+        dem = sigma * np.sqrt(2 * np.pi)
+        V = p[0] + decay * p[1] * (num / dem)
+        return V
 
 
 # Parameters for minimization includes Voigt and Lorentzian parameters
@@ -116,12 +117,14 @@ def Parameters(data, x, f):
     # Lorentzain: p = [Offset, Height, FWHM, Center, lifetime]
     # Voigt: p = [Offset, Height, FWHM_L, FWHM_G, Center, Liftime]
     if f == 'Lorentzian':
-        p = [np.min(data), (np.max(data)-np.min(data)), 3.5, np.argmax(np.array(data)), 50]
+        p = (np.min(data), np.max(data), 3.5, x[np.argmax(data)], 350)
         return p
     elif f == 'Voigt':
 
-        p = [np.min(data), np.max(data), 3.6, 1, x[np.argmax(np.array(data))], 350]
-        return p
+         p = (np.min(data), np.max(data), 3.6, 1, 40, 350)
+        # p = [np.min(data), np.max(data), 3.6, 1, device_put(x)[np.argmax(data)], 350]
+
+         return p
 
 
 # Chi squared function used in the minimization
@@ -133,26 +136,53 @@ def chi2(p):
         func = voigt(x_step, p)
     err = y_err   # Uncertainty in the data sqrt(N)
     # calculate the chi2
-    delta = (y_data - func) / err
+    delta = (y_data - 100) / err
     chi2_v = sum(pow(delta, 2))
     return chi2_v
 
 
 # Used for selecting Lorentzian or Voigt fitting fucntions
-def ok():
+def select_fun():
     global sel
     sel = var.get()
     roo.quit()
     roo.destroy()
 
 
-def select():
+def select_FB():
     global sel2
     sel2 = var2.get()
     roo2.quit()
     roo2.destroy()
 
 
+class MinimizationRoutine:
+
+    def __init__(self, name):
+        self.name = name
+        self.fit = []
+        self.err = []
+
+    def minimzation(self, name, par):
+        if name == 'Voigt':
+            errors = (10, 10, 0.01, 0.001, .1, 1)
+            limits = (None, None, (3, 6), (0, 0.9), None, (17, 500))
+            fixed = (False, False, False, False, False, False)
+        elif name == 'Lorentzian':
+            errors = (10, 10, 0.01, .1, 1)
+            limits = (None, None, (2, 6), None, None)
+            fixed = (False, False, False, False, False)
+        m = Minuit.from_array_func(jit(chi2), par, error=errors, limit=limits, fix=fixed, errordef=1, pedantic=False)
+        m.migrad()  # This is minimization strategy
+        if name == 'Voigt':
+            #               [Offset        , Height        , FWHM_L        , FWHM_G       , Center         , liftime       ]
+            self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]])
+            self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]])
+
+        elif name == 'Lorentzian':
+            #               [Offset        , Height        , FWHM_L        , Center        , lifetime      ]
+            self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"]])
+            self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"],  m.errors["x3"], m.errors["x4"]])
 
 
 # Grabs the directory for the data
@@ -170,7 +200,7 @@ var = StringVar(roo)
 var.set(funcs[1])
 w = OptionMenu(roo, var, *funcs)
 w.pack()
-button = Button(roo, text="Select", command=ok)
+button = Button(roo, text="Select", command=select_fun)
 button.pack()
 mainloop()
 
@@ -184,7 +214,7 @@ var2 = StringVar(roo2)
 var2.set(direction[0])
 w2 = OptionMenu(roo2, var2, *direction)
 w2.pack()
-button2 = Button(roo2, text="Select", command=select)
+button2 = Button(roo2, text="Select", command=select_FB)
 button2.pack()
 mainloop()
 
@@ -193,7 +223,7 @@ mainloop()
 b_width = 2.8
 
 
-if sel == 'Lorentzian':
+'''if sel == 'Lorentzian':
     the_fits = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM', 'Peak Position', 'Lifetime',
                                      'Reduced Chi Squared'])
     the_error = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM err', 'Peak Position err',
@@ -203,7 +233,12 @@ elif sel == 'Voigt':
     the_fits = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM_L', 'FWHM_G', 'Peak Position', 'Lifetime',
                                      'Reduced Chi Squared'])
     the_error = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM_L err', 'FWHM_G err'
-                             , 'Peak Position err', 'Lifetime err'])
+                             , 'Peak Position err', 'Lifetime err'])'''
+
+fit_vals = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM_L', 'FWHM_G', 'Peak Position', 'Lifetime',
+                                     'Reduced Chi Squared'])
+error_vals = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM_L err', 'FWHM_G err',
+                               'Peak Position err', 'Lifetime err'])
 
 sum_data = pd.DataFrame(columns=['Counts'])
 data_raw = np.array([])
@@ -275,11 +310,11 @@ if prompt1 is False:
     for index, row in list_file.iterrows():
         times = row['Time']
         file_path = row['File path']
-        data_raw = (np.genfromtxt(file_path))
+        data_raw = (onp.genfromtxt(file_path))
         first_p = 2
         last_p = 8
         pps = last_p - first_p
-        data_binned = []
+        data_binned = np.array([])
         a = []
 
         # Gather data points an bin them
@@ -303,9 +338,9 @@ if prompt1 is False:
         ''' Now to minimize the scans'''
 
         if sel2 == 'Forward':
-            x_step = df_Forward['steps']
-            y_data = df_Forward['binned PMT data']/(b_width*pps)
-            y_err = df_Forward['error']/(b_width*pps)
+            x_step = df_Forward.to_numpy()[:, 1]
+            y_data = df_Forward.to_numpy()[:, 0]/(b_width*pps)
+            y_err = df_Forward.to_numpy()[:, 2]/(b_width*pps)
             time_stamp = times
 
         elif sel2 == 'Backward':
@@ -315,90 +350,51 @@ if prompt1 is False:
             time_stamp = times
 
         p1 = Parameters(y_data, x_step, sel)  # Generate initial parameter guesses for scans
-
-        # If Lorentzain function is selected for fitting
-        if sel == 'Lorentzian':
-            #Use for lorentzian fit
-            m = Minuit.from_array_func(chi2, p1, error=(10, 1, 0.001, 0.001, .1),
-                                       limit=(None, None, (2, 6), None, None),
-                                       fix=(False, False, False, False, False), errordef=1, pedantic=False)
-            m.migrad() # This is minimization strategy
-            #       [Offset        , Height        , FWHM          , Center        , lifetime      ]
-            p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"]]
-            p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]]
-
-            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            repack_data = pd.DataFrame({
-                'rate': y_data,
-                'err': y_err,
-                'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
-                'Residuals': (y_data - voigt(x_step, p_fit)),
-                'Freq': x_step,
-            })
-
-            the_fits = the_fits.append({
-                'Time': time_stamp,
-                'Offset': p_fit[0],
-                'Peak Height': p_fit[1],
-                'FWHM': p_fit[2],
-                'Peak Position': p_fit[3],
-                'Lifetime': p_fit[4],
-                'Reduced Chi Squared': Red_chi2
-            }, ignore_index=True)
-
-            the_error = the_error.append({
-                'Time': time_stamp,
-                'Offset err': p_err[0],
-                'Peak Height err': p_err[1],
-                'FWHM err': p_err[2],
-                'Peak Position err': p_err[3],
-                'Lifetime err': p_err[4]
-            }, ignore_index=True)
-            x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
+        val = MinimizationRoutine(sel)
+        val.minimzation(val.name, p1)
+        p_fit = val.fit
+        p_err = val.err
+        x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
+        if val.name == 'Lorentzian':
+            exp_val = lorentzian(x_step, p_fit)
             y_fit = lorentzian(x_fit, p_fit)
-
-        # If Voigt function is selected for fitting
-        elif sel == 'Voigt':
-
-            # use for Voigt fit
-            m = Minuit.from_array_func(jit(chi2), p1, error=(10, 10, 0.01, 0.001, .1, 1),
-                                   limit=(None, None, (3, 6), (0, 0.9), None, (17, 500)),
-                                   fix=(False, False, False, False, False, False), errordef=1, pedantic=False)
-            m.migrad()  # This is minimization strategy
-            #       [Offset        , Height        , FWHM_L        , FWHM_G       , Center         , liftime       ]
-            p_fit = [m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]]
-            p_err = [m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]]
-
             Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            repack_data = pd.DataFrame({
-                'rate': y_data,
-                'err': y_err,
-                'Normalized Residuals': (y_data - voigt(x_step, p_fit)) / y_err,
-                'Residuals': (y_data - voigt(x_step, p_fit)),
-                'Freq': x_step,
-            })
-            the_fits = the_fits.append({
-                'Time': time_stamp,
-                'Offset': p_fit[0],
-                'Peak Height': p_fit[1],
-                'FWHM_L': p_fit[2],
-                'FWHM_G': p_fit[3],
-                'Peak Position': p_fit[4],
-                'Lifetime': p_fit[5],
-                'Reduced Chi Squared': Red_chi2
-            }, ignore_index=True)
+            p_fit.insert(3, 'N/A')
+            p_err.insert(3, 'N/A')
 
-            the_error = the_error.append({
-                'Time': time_stamp,
-                'Offset err': p_err[0],
-                'Peak Height err': p_err[1],
-                'FWHM_L err': p_err[2],
-                'FWHM_G err': p_err[3],
-                'Peak Position err': p_err[4],
-                'Lifetime err': p_err[5]
-            }, ignore_index=True)
-            x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
+        elif val.name == 'Voigt':
+            exp_val = voigt(x_step, p_fit)
             y_fit = voigt(x_fit, p_fit)
+            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+
+        repack_data = pd.DataFrame({
+            'rate': y_data,
+            'err': y_err,
+            'Normalized Residuals': (y_data - exp_val) / y_err,
+            'Residuals': (y_data - exp_val),
+            'Freq': x_step,
+        })
+
+        fit_vals = fit_vals.append({
+            'Time': time_stamp,
+            'Offset': p_fit[0],
+            'Peak Height': p_fit[1],
+            'FWHM_L': p_fit[2],
+            'FWHM_G': p_fit[3],
+            'Peak Position': p_fit[4],
+            'Lifetime': p_fit[5],
+            'Reduced Chi Squared': Red_chi2
+        }, ignore_index=True)
+
+        error_vals = error_vals.append({
+            'Time': time_stamp,
+            'Offset err': p_err[0],
+            'Peak Height err': p_err[1],
+            'FWHM_L err': p_err[2],
+            'FWHM_G err': p_err[3],
+            'Peak Position err': p_err[4],
+            'Lifetime err': p_err[5]
+        }, ignore_index=True)
 
         fit = pd.DataFrame({
             'x_fit': x_fit,
@@ -441,8 +437,8 @@ if prompt1 is False:
     print("Minimization complete")
     print("Time: ", fin - begin, "s")
     # save the data and errors to csv files
-    the_fits.to_csv(file_save(), sep='\t', index=False)
-    the_error.to_csv(file_save_err(), sep='\t', index=False)
+    fit_vals.to_csv(file_save(), sep='\t', index=False)
+    error_vals.to_csv(file_save_err(), sep='\t', index=False)
 
 # if user selects to sum all the scans together
 elif prompt1 is True:
@@ -450,7 +446,7 @@ elif prompt1 is True:
     # Use file name to get data from file, the files are chronologically ordered
     for index, row in list_file.iterrows():
         file_path = row['File path']
-        data.append(np.genfromtxt(file_path))
+        data.append(onp.genfromtxt(file_path))
     shape = list(data[0].shape)
     shape[:0] = [len(data)]
     data1 = np.concatenate(data).reshape(shape)
@@ -513,24 +509,25 @@ elif prompt1 is True:
             'Residuals': (y_data - voigt(x_step, p_fit)),
             'Freq': x_step,
         })
-
-        the_fits = the_fits.append({
+        fit_vals = fit_vals.append({
             'Time': time_stamp,
             'Offset': p_fit[0],
             'Peak Height': p_fit[1],
-            'FWHM': p_fit[2],
-            'Peak Position': p_fit[3],
-            'Lifetime': p_fit[4],
+            'FWHM_L': p_fit[2],
+            'FWHM_G': p_fit[3],
+            'Peak Position': p_fit[4],
+            'Lifetime': p_fit[5],
             'Reduced Chi Squared': Red_chi2
         }, ignore_index=True)
 
-        the_error = the_error.append({
+        error_vals = error_vals.append({
             'Time': time_stamp,
             'Offset err': p_err[0],
             'Peak Height err': p_err[1],
-            'FWHM err': p_err[2],
-            'Peak Position err': p_err[3],
-            'Lifetime err': p_err[4]
+            'FWHM_L err': p_err[2],
+            'FWHM_G err': p_err[3],
+            'Peak Position err': p_err[4],
+            'Lifetime err': p_err[5]
         }, ignore_index=True)
         x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
         y_fit = lorentzian(x_fit, p_fit)
@@ -556,7 +553,7 @@ elif prompt1 is True:
             'Freq': x_step,
         })
 
-        the_fits = the_fits.append({
+        fit_vals = fit_vals.append({
             'Time': time_stamp,
             'Offset': p_fit[0],
             'Peak Height': p_fit[1],
@@ -567,7 +564,7 @@ elif prompt1 is True:
             'Reduced Chi Squared': Red_chi2
         }, ignore_index=True)
 
-        the_error = the_error.append({
+        error_vals = error_vals.append({
             'Time': time_stamp,
             'Offset err': p_err[0],
             'Peak Height err': p_err[1],
@@ -621,11 +618,11 @@ elif prompt1 is True:
         with PdfPages(fig_save) as pdf:
             pdf.savefig()
 
-    the_fits.to_csv(file_save(), sep='\t', index=False)
-    the_error.to_csv(file_save_err(), sep='\t', index=False)
+    fit_vals.to_csv(file_save(), sep='\t', index=False)
+    error_vals.to_csv(file_save_err(), sep='\t', index=False)
     # Saving Stark Data\
-    P = np.float64(the_fits['Peak Position'])
-    E = np.float64(the_error['Peak Position err'])
+    P = np.float64(fit_vals['Peak Position'])
+    E = np.float64(error_vals['Peak Position err'])
     stark_data = '%s\t%.6f\t%.6f' % (volt, P, E)
     file_name = "Stark_%s_%s_%s.txt" % (sel2, sel, sel3)
     fn = open(file_name, 'a+')
