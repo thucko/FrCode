@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="45b45242-9fdc-4543-894e-8eb1eff4d35f" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/FrCode.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FrCode.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Physics/Spectra_fitter_linux.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics/Spectra_fitter_linux.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cavity/Cavity_build_specs.py" beforeDir="false" afterPath="$PROJECT_DIR$/Cavity/Cavity_build_specs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cavity/Cavity_coupling.py" beforeDir="false" afterPath="$PROJECT_DIR$/Cavity/Cavity_coupling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Physics/Stark_shift_fitting.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics/Stark_shift_fitting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Physics/Transition_probabilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics/Transition_probabilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tools_and_plotters/scope_waveform_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tools_and_plotters/scope_waveform_tool.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,12 +26,6 @@
     <option name="ROOT_SYNC" value="DONT_SYNC" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
-    <option name="y" value="-10" />
-    <option name="width" value="980" />
-    <option name="height" value="1100" />
-  </component>
   <component name="ProjectId" id="1XRR729y1ZadFoMBOvChmPvz1es" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -39,7 +35,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/Cavity/Cavity_build_specs.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Physics/photons.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -47,7 +43,7 @@
       <recent name="C:\Users\hucko\Documents\GitHub\FrCode" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Spectra_fitter_linux">
+  <component name="RunManager" selected="Python.Cavity_build_specs">
     <configuration name="Cavity_build_specs" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -237,6 +233,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="photons" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="FrCode" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="/usr/bin/python3.8" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Physics" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Physics/photons.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="scope_waveform" type="PythonConfigurationType" factoryName="Python">
       <module name="FrCode" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -268,6 +285,7 @@
       <item itemvalue="Python.Stark_shift_fitting" />
       <item itemvalue="Python.TP" />
       <item itemvalue="Python.peak_plotter" />
+      <item itemvalue="Python.photons" />
       <item itemvalue="Python.scope_waveform" />
     </list>
   </component>
@@ -306,67 +324,82 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="662" y="317" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1590520133441">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state x="662" y="331" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1590702178243">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="662" y="317" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1035@0.0.1920.1035" timestamp="1590520133441" />
+    <state x="662" y="331" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1080@0.0.1920.1080" timestamp="1590702178243" />
     <state x="882" y="429" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400@0.0.2560.1400" timestamp="1588353001020" />
     <state x="882" y="441" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1440@0.0.2560.1440" timestamp="1585070175094" />
-    <state x="905" y="391" key="FileChooserDialogImpl" timestamp="1590520124013">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state x="905" y="408" key="FileChooserDialogImpl" timestamp="1590702175018">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="905" y="391" key="FileChooserDialogImpl/0.0.1920.1035@0.0.1920.1035" timestamp="1590520124013" />
+    <state x="905" y="408" key="FileChooserDialogImpl/0.0.1920.1080@0.0.1920.1080" timestamp="1590702175018" />
     <state x="1207" y="529" key="FileChooserDialogImpl/0.0.2560.1400@0.0.2560.1400" timestamp="1588352992034" />
-    <state width="1377" height="321" key="GridCell.Tab.0.bottom" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="417" key="GridCell.Tab.0.bottom" timestamp="1592764226788">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.0.bottom/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="417" key="GridCell.Tab.0.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1592764226788" />
     <state width="2042" height="201" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="1377" height="321" key="GridCell.Tab.0.center" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="417" key="GridCell.Tab.0.center" timestamp="1592764226787">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.0.center/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="417" key="GridCell.Tab.0.center/0.0.1920.1080@0.0.1920.1080" timestamp="1592764226787" />
     <state width="2042" height="201" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="1377" height="321" key="GridCell.Tab.0.left" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="417" key="GridCell.Tab.0.left" timestamp="1592764226787">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.0.left/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049394" />
+    <state width="1769" height="417" key="GridCell.Tab.0.left/0.0.1920.1080@0.0.1920.1080" timestamp="1592764226787" />
     <state width="2042" height="201" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="1377" height="321" key="GridCell.Tab.0.right" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="417" key="GridCell.Tab.0.right" timestamp="1592764226788">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.0.right/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="417" key="GridCell.Tab.0.right/0.0.1920.1080@0.0.1920.1080" timestamp="1592764226788" />
     <state width="2042" height="201" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1588355268526" />
     <state width="2539" height="290" key="GridCell.Tab.0.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585156403591" />
-    <state width="1377" height="321" key="GridCell.Tab.1.bottom" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="321" key="GridCell.Tab.1.bottom" timestamp="1591986421868">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.1.bottom/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="321" key="GridCell.Tab.1.bottom/0.0.1920.1080@0.0.1920.1080" timestamp="1591986421868" />
     <state width="2539" height="508" key="GridCell.Tab.1.bottom/0.0.2560.1440@0.0.2560.1440" timestamp="1585091784906" />
-    <state width="1377" height="321" key="GridCell.Tab.1.center" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="321" key="GridCell.Tab.1.center" timestamp="1591986421868">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.1.center/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="321" key="GridCell.Tab.1.center/0.0.1920.1080@0.0.1920.1080" timestamp="1591986421868" />
     <state width="2539" height="508" key="GridCell.Tab.1.center/0.0.2560.1440@0.0.2560.1440" timestamp="1585091784906" />
-    <state width="1377" height="321" key="GridCell.Tab.1.left" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="321" key="GridCell.Tab.1.left" timestamp="1591986421868">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.1.left/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="321" key="GridCell.Tab.1.left/0.0.1920.1080@0.0.1920.1080" timestamp="1591986421868" />
     <state width="2539" height="508" key="GridCell.Tab.1.left/0.0.2560.1440@0.0.2560.1440" timestamp="1585091784906" />
-    <state width="1377" height="321" key="GridCell.Tab.1.right" timestamp="1590554049395">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state width="1769" height="321" key="GridCell.Tab.1.right" timestamp="1591986421868">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1377" height="321" key="GridCell.Tab.1.right/0.0.1920.1035@0.0.1920.1035" timestamp="1590554049395" />
+    <state width="1769" height="321" key="GridCell.Tab.1.right/0.0.1920.1080@0.0.1920.1080" timestamp="1591986421868" />
     <state width="2539" height="508" key="GridCell.Tab.1.right/0.0.2560.1440@0.0.2560.1440" timestamp="1585091784906" />
-    <state x="697" y="306" key="SettingsEditor" timestamp="1590520727231">
-      <screen x="0" y="0" width="1920" height="1035" />
+    <state x="697" y="319" key="SettingsEditor" timestamp="1592843985839">
+      <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="697" y="306" key="SettingsEditor/0.0.1920.1035@0.0.1920.1035" timestamp="1590520727231" />
+    <state x="697" y="319" key="SettingsEditor/0.0.1920.1080@0.0.1920.1080" timestamp="1592843985839" />
     <state x="929" y="416" key="SettingsEditor/0.0.2560.1400@0.0.2560.1400" timestamp="1588355223522" />
     <state x="929" y="428" key="SettingsEditor/0.0.2560.1440@0.0.2560.1440" timestamp="1586280632441" />
+    <state width="960" height="540" key="XDebugger.FullValuePopup" timestamp="1591045597934">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state width="960" height="540" key="XDebugger.FullValuePopup/0.0.1920.1080@0.0.1920.1080" timestamp="1591045597934" />
     <state x="622" y="170" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1590522444319">
       <screen x="0" y="0" width="1920" height="1035" />
     </state>
@@ -403,6 +436,36 @@
           <url>file://$PROJECT_DIR$/scope_waveform.py</url>
           <line>103</line>
           <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Physics/photons.py</url>
+          <line>178</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Physics/photons.py</url>
+          <line>173</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Tools_and_plotters/scope_waveform_tool.py</url>
+          <line>157</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Tools_and_plotters/scope_waveform_tool.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Tools_and_plotters/scope_waveform_tool.py</url>
+          <line>50</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Cavity/Cavity_build_specs.py</url>
+          <line>24</line>
+          <option name="timeStamp" value="47" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
