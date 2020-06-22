@@ -12,17 +12,16 @@ def lorentzian(x, p, s0):
     return L
 
 
-h = 6.62607004E-34
-c = 3e8
-t = 26.24E-9
+h = 6.62607004E-34 # Plancks Constant
+c = 3e8 # speed of light m/s
+t = 26.24E-9 # lifetime
 l = 780e-9
 
-Is = (np.pi*h*c)/(3*t*l**3)
+Is = (np.pi*h*c)/(3*t*l**3) #saturation intensity
 
 Is = Is/1e-4
 
-I = 156e-3/(np.pi*2.54**2)
-
+I = 156e-3/(np.pi*2.54**2) # light intensity W/cm^2
 s1 = I/Is
 
 laser = (266.65-15.0)
