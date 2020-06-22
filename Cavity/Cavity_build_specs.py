@@ -6,20 +6,24 @@ Used to calculate optical cavity parameters.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from cmath import *
 
 
 c = 3e10  # speed of light in cm/s
-L = 5.748*2.54  # length of cavity
+inch_to_cm = 2.54
+L = 16  # length of cavity
 R1 = 100.0  # Radius of curvature of M1 in cm
 R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 496e-7  # Wavelength of light in cm
-a = 0.0 # loss coefficient
-A1 = 0.0  # Loss of M1
-Ref1 = 0.9991  # Reflection of M1
+k = 0
+a = 4*np.pi*k/wavelength # loss coefficient
+Ref1 = 0.99 # Reflection of M1
+r1 = np.sqrt(Ref1)
 Ref2 = 0.99995 # Reflection of M2
-T1 = 1-Ref1  # Transmission of M1
-T2 = 1-Ref2  # Transmission of M2
+r2 = np.sqrt(Ref2)
+T1 = 10000E-6  # Transmission of M1
+T2 = 50E-6  # Transmission of M2
+A1 = 1-(Ref1+T1)   # Loss of M1
+
 vFSR = c/(2*L)
 dL = (wavelength/2)*100e3/vFSR  # Stability of the cavity
 g1 = 1-(L/R1)
@@ -31,8 +35,6 @@ z2 = g1*(1-g2)*L/(g1+g2-2*g)
 w0 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g*(1-g)/(g1+g2-2*g)**2))  # beam waist at the center of the cavity
 w1 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g2/(g1*(1-g))))
 w2 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g1/(g2*(1-g))))
-
-
 
 
 gm = np.sqrt(Ref1*Ref2)*np.exp(-a*2*L)
