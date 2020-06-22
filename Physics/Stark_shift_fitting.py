@@ -63,8 +63,6 @@ elif '_Backward' in f:
     sel2 = 'Backward'
 
 
-
-
 E = np.array([])
 for val in volt:
     for i, c in enumerate(val):
@@ -87,7 +85,7 @@ y_data = data['Frequency']
 x_data = data['EField']
 p1 = [0.5, -0.03]
 
-m = Minuit.from_array_func(chi2, p1, error=(0.05, 0.03), limit=(None, None), fix=(False, False)
+m = Minuit.from_array_func(chi2, p1, error=(0.05, 0.0), limit=(None, None), fix=(False, False)
                            , errordef=1)
 m.migrad()
 
@@ -123,10 +121,10 @@ plt.style.use('ggplot')
 gs = gridspec.GridSpec(2, 2)
 fig = plt.figure(figsize=(16, 9))
 ax1 = fig.add_subplot(gs[0, :])
-ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.9, r'$\chi^2_{reduced}=%.3f$' % Red_chi2, fontsize=14)
+#ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.9, r'$\chi^2_{reduced}=%.3f$' % Red_chi2, fontsize=14)
 ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.6, r'$f(x) = %.3f x+(%.3f)$' % (p_fit[0], p_fit[1]), fontsize=14)
-ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.3, r'$\delta m=%.3f$' % p_err[0], fontsize=14)
-ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.0, r'$\delta b=%.3f$' % p_err[1], fontsize=14)
+#ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.3, r'$\delta m=%.3f$' % p_err[0], fontsize=14)
+#ax1.text(x_fit[0] + 1, np.sign(p_fit[0])*2.0, r'$\delta b=%.3f$' % p_err[1], fontsize=14)
 ax1.set_title('Frequency Shift vs Electric Field\n %s Scan' % sel2, fontsize=18)
 ax1.set_xlabel(r'$E^2$(kV$^2$ cm$^{-2})$', fontsize=16)
 ax1.set_ylabel(r'$\Delta\nu_{Stark}$ (MHz)', fontsize=16)
