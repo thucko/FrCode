@@ -170,7 +170,7 @@ class DataManager:
             b = 80
         elif name == 'Backward':
             a = 80
-            b =160
+            b = 160
 
         self.y_val.extend(data[a:b]/(b_width*pps))
         self.x_val.extend(x[a:b])
@@ -188,11 +188,13 @@ class MinimizationRoutine:
             errors = (10, 10, 0.01, 0.001, .1, 1)
             limits = (None, None, (3, 6), (0, 0.9), None, (17, 500))
             fixed = (False, False, False, False, False, False)
+
         elif name == 'Lorentzian':
             errors = (10, 10, 0.01, .1, 1)
             limits = (None, None, (2, 6), None, None)
             fixed = (False, False, False, False, False)
-        m = Minuit.from_array_func(jit(chi2), p1, error=errors, limit=limits, fix=fixed, errordef=1, pedantic=False)
+
+        m = Minuit.from_array_func(jit(chi2), par, error=errors, limit=limits, fix=fixed, errordef=1, pedantic=False)
         m.migrad()
 
         if name == 'Voigt':
@@ -455,10 +457,10 @@ elif prompt1 is True:
     shape[:0] = [len(data0)]
     data1 = np.concatenate(data0).reshape(shape)
     y = data1.sum(axis=0)
-    first_p = 4
+    first_p = 2
     last_p = 8
     pps = last_p - first_p
-    data_binned = []
+    data_binned = np.array([])
     a = []
     # Gather data points an bin them
     for i in range(0, 160):
@@ -500,7 +502,6 @@ elif prompt1 is True:
     })
 
     fit_vals = fit_vals.append({
-        'Time': time_stamp,
         'Offset': p_fit[0],
         'Peak Height': p_fit[1],
         'FWHM_L': p_fit[2],
@@ -511,7 +512,6 @@ elif prompt1 is True:
     }, ignore_index=True)
 
     error_vals = error_vals.append({
-        'Time': time_stamp,
         'Offset err': p_err[0],
         'Peak Height err': p_err[1],
         'FWHM_L err': p_err[2],
