@@ -13,6 +13,8 @@ import pandas as pd
 from tkinter.filedialog import askopenfilenames
 from tkinter.filedialog import askdirectory
 from tkinter import *
+import os
+from itertools import product
 
 
 
@@ -31,9 +33,23 @@ def powermW(x):
     P = np.float64(10**(x/10))
     return P
 
+class ScopeWaveform:
+    def __init__(self):
+        self.channels = {}
+
+    def get_data(self, files):
+
+        for x in files:
+            file_name = os.path.basename(x)
+            d = pd.read_csv(x, dtype='a')
+            self.channels.update({file_name: d})
 
 
-files = file_dialog()
+if __name__ == '__main__':
+    files = file_dialog()
+    data = ScopeWaveform()
+    data.get_data(files)
+    print('Done')
 
 d1 = pd.read_csv(files[0], dtype='a')
 #d2 = pd.read_csv(files[1], dtype='a')
