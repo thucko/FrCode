@@ -6,6 +6,10 @@ Used to calculate optical cavity parameters.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from sympy.solvers import solve
+from sympy import Symbol
+
+calculate_loss = False
 
 
 c = 3e10  # speed of light in cm/s
@@ -15,14 +19,13 @@ R1 = 100.0  # Radius of curvature of M1 in cm
 R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 496e-7  # Wavelength of light in cm
 k = 0
-a = 4*np.pi*k/wavelength # loss coefficient
-Ref1 = 0.99 # Reflection of M1
-r1 = np.sqrt(Ref1)
+
+Ref1 = 0.9991 # Reflection of M1
 Ref2 = 0.99995 # Reflection of M2
-r2 = np.sqrt(Ref2)
-T1 = 10000E-6  # Transmission of M1
+T1 = 900E-6  # Transmission of M1
 T2 = 50E-6  # Transmission of M2
-A1 = 1-(Ref1+T1)   # Loss of M1
+
+
 
 vFSR = c/(2*L)
 dL = (wavelength/2)*100e3/vFSR  # Stability of the cavity
@@ -36,15 +39,23 @@ w0 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g*(1-g)/(g1+g2-2*g)**2))  # beam waist
 w1 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g2/(g1*(1-g))))
 w2 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g1/(g2*(1-g))))
 
+if calculate_loss == False:
+    a = 0 # 4*np.pi*k/wavelength # loss coefficient
+    gm = np.sqrt(Ref1 * Ref2) * np.exp(-a * 2 * L)
+    F = np.pi * np.sqrt(gm) / (1 - gm)
+    t = L * F / (np.pi * c)
 
-gm = np.sqrt(Ref1*Ref2)*np.exp(-a*2*L)
-F = np.pi*np.sqrt(gm)/(1-gm)
-P = 1/(1-np.sqrt(Ref1*Ref2))
-P2 = F/np.pi
+elif calculate_loss == True:
+    b = 0.891
+    t = (1/b)*1E-6
+    A = (t*c/L)
+    x = Symbol('x')
+    gm_cal = solve(x**0.5/(1-x)-A, x)
+    gm = np.float64(gm_cal[0])
+    a = -(1/(2*L))*np.log(gm**2/(Ref1*Ref2))
+    F = np.pi * np.sqrt(gm) / (1 - gm)
 
-t = L*F/(np.pi*c)
 vFWHM = vFSR/F  # cavity linewidth
-
 ''' General Case'''
 dv = np.arange(-2, 2, 0.001)
 dPhi = 2*np.pi*dv*1E6*2*L/c
@@ -52,7 +63,7 @@ g_v = gm*np.exp(-1j*dPhi)
 gamma = (1-gm)**2 + 4*gm*np.sin(dPhi/2)**2  # defines |1-g(v)|^2
 ''' Gain equations'''
 G_g = T1/((1-gm)**2*(1 + (2*F/np.pi)**2*np.sin(dPhi/2)**2))  # cavity gain
-R_g = ((Ref1-(1-A1)*gm)**2+4*Ref1*gm*np.sin(dPhi/2)**2)/(Ref1*gamma)  # Reflection dip/gain
+R_g = ((Ref1-(Ref1+T1)*gm)**2+4*Ref1*gm*np.sin(dPhi/2)**2)/(Ref1*gamma)  # Reflection dip/gain
 T_g = T1*T2*gm/(np.sqrt(Ref1*Ref2)*gamma)  # Transmission gain
 '''Phase equations'''
 phi_cav = np.arctan(-gm*np.sin(dPhi)/(1-gm*np.cos(dPhi)))
@@ -62,10 +73,10 @@ phi_ref = np.arctan(-T1*gm*np.sin(dPhi)/(-Ref1*gamma+T1*gm*(np.cos(dPhi)-1)))
 
 ''' For on resonance '''
 G = T1/(1-gm)**2
-RefG = (Ref1 - (1-A1)*gm)**2/(Ref1*(1-np.sqrt(Ref1*Ref2))**2)
+RefG = (Ref1 - (Ref1+T1)*gm)**2/(Ref1*(1-np.sqrt(Ref1*Ref2))**2)
 tranG = T1*T2*gm/(np.sqrt(Ref1*Ref2)*(1-gm)**2)
 I = tranG+RefG
-#loss = np.exp(-a*2*L)
+
 print("FSR = %.4E Hz" % vFSR)
 print("Length of Stability = %.4E m" % dL)
 print("zr = %.4f cm" % zr)
@@ -74,6 +85,7 @@ print("z2 = %.4f cm" % z2)
 print("w0 = %.4f cm" % w0)
 print("w1 = %.4f cm" % w1)
 print("w2 = %.4f cm" % w2)
+print('Cavity Loss = %.4E' % a)
 print("Cavity Storage time = %.4E s" % t)
 print("Linewidth = %.4f Hz" % vFWHM)
 print("g1g2 = %.4f" % g)
