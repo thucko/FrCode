@@ -1,0 +1,4 @@
+.idea
+*.txt
+Physics/__pycache__/
+
