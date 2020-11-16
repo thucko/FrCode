@@ -79,7 +79,7 @@ if __name__ == '__main__':
     files = file_dialog()
     data = ScopeWaveform()
     data.get_data(files)
-    plt.style.use('ggplot')
+    plt.style.use('cern_root')
     for f in files:
         fn = os.path.basename(f)
         df = data.channels[fn]
@@ -89,16 +89,18 @@ if __name__ == '__main__':
         if do_fit == True:
             y = np.array(np.float64(df[pair[0][1]]))
             popt, pcov = curve_fit(fun, x, y, maxfev=1000)
-            print(pcov)
+            perr = np.sqrt(np.diag(pcov))
+            print(popt, perr)
+
         for i in range(0, len(pair)):
-            plt.plot(x, df[pair[i][1]], label=pair[i][1])
+            plt.plot(x, df[pair[i][1]], 'r.-', label=pair[i][1])
     if do_fit == True:
         plt.plot(x, fun(x, *popt), 'k', label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
         # plt.text(1, 0.8, r'Fit Function: $f(x) = c(a-e^{-bx})$', size= 16)
         plt.text(1, 0.8, r'Fit Function: $f(x) = ae^{-x/b}+c$', size=16)
 
 
-    plt.title(r'AOM decay')
+    plt.title(r'')
     if is_fft == True:
         plt.xlabel('Frequency (kHz)')
         plt.ylabel('Power (dBm)')
@@ -107,7 +109,7 @@ if __name__ == '__main__':
             plt.ylabel('Normalized Voltage')
         else:
             plt.ylabel('Voltage')
-        plt.xlabel(r'Time ($\mu$s)')
+        plt.xlabel(r'Time (ms)')
     plt.legend()
     plt.show()
 

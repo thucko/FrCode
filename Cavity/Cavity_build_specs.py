@@ -9,6 +9,7 @@ import matplotlib.gridspec as gridspec
 from sympy.solvers import solve
 from sympy import Symbol
 
+
 calculate_loss = False
 
 
@@ -20,9 +21,9 @@ R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 496e-7  # Wavelength of light in cm
 k = 0
 
-Ref1 = 0.9991 # Reflection of M1
+Ref1 = 0.99995 # Reflection of M1
 Ref2 = 0.99995 # Reflection of M2
-T1 = 900E-6  # Transmission of M1
+T1 = 50E-6  # Transmission of M1
 T2 = 50E-6  # Transmission of M2
 
 
@@ -46,7 +47,7 @@ if calculate_loss == False:
     t = L * F / (np.pi * c)
 
 elif calculate_loss == True:
-    b = 0.891
+    b = 0.903
     t = (1/b)*1E-6
     A = (t*c/L)
     x = Symbol('x')
@@ -57,7 +58,7 @@ elif calculate_loss == True:
 
 vFWHM = vFSR/F  # cavity linewidth
 ''' General Case'''
-dv = np.arange(-2, 2, 0.001)
+dv = np.arange(-0.2, 0.2, 0.001)
 dPhi = 2*np.pi*dv*1E6*2*L/c
 g_v = gm*np.exp(-1j*dPhi)
 gamma = (1-gm)**2 + 4*gm*np.sin(dPhi/2)**2  # defines |1-g(v)|^2
@@ -97,7 +98,7 @@ print("Reflection + Transmission gain = %.4f" % I)
 #print("Intra-cavity Losses = %.4f" % loss)
 
 '''Plot the general cases for the phase and gains'''
-plt.style.use('ggplot')
+plt.style.use('cern_root')
 gs = gridspec.GridSpec(3, 2)
 fig = plt.figure()
 ax1 = fig.add_subplot(gs[0, 0])
