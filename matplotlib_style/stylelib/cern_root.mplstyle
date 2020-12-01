@@ -1,0 +1,35 @@
+#Figure Properties
+figure.figsize: 9, 6
+
+#Font Properties
+font.family: serif
+font.serif: Times New Roman
+font.size: 14
+text.usetex: True
+
+
+#General Axes Properties
+
+#x-axis Properties
+xaxis.labellocation: right
+xtick.minor.visible: true
+xtick.direction: in
+xtick.major.size: 12
+xtick.minor.size: 6
+xtick.major.width: 1.2
+xtick.minor.width: 0.9
+
+
+#y-axis Properties
+yaxis.labellocation: top
+ytick.minor.visible: true
+ytick.direction: in
+ytick.major.size: 15
+ytick.minor.size: 7.5
+ytick.major.width: 1.2
+ytick.minor.width: 0.9
+
+#Grid Properties
+grid.linestyle: :
+grid.color: b0b0b0 
+grid.linewidth: 1.2
