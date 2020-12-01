@@ -1,4 +1,9 @@
 .idea
 *.txt
+*.csv
+*.png
+*.ps
+*.pdf
 Physics/__pycache__/
+README.md
 
