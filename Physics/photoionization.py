@@ -28,7 +28,7 @@ N = []
 for R in rate:
     N.append(N0*np.exp(-R*time))
 
-plt.style.use('cern_root')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 plt.plot(time, N[0], color='r', label='No extinction')
 plt.plot(time, N[1], color='g', label='10000:1')
 plt.plot(time, N[2], color='b', label='400000:1')

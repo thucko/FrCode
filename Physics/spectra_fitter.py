@@ -592,7 +592,7 @@ elif user_states.summing_scan == 'sum':
 
 # Plotting routine
 #matplotlib.use('Cairo')
-plt.style.use('cern_root')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 
 if user_states.save_figq == 'no':
     pdf = None

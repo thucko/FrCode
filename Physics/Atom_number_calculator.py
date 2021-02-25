@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
 
     '''Plotting data'''
-    plt.style.use('cern_root')
+    plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
     plt.plot(time, num.atom_number)
     plt.ylabel('Number of Atoms (counts)', size=16)
     plt.xlabel('Time (s)', size=16)

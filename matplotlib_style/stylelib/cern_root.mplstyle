@@ -5,7 +5,7 @@ figure.figsize: 9, 6
 font.family: serif
 font.serif: Times New Roman
 font.size: 14
-text.usetex: True
+#text.usetex: True
 
 
 #General Axes Properties

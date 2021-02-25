@@ -119,7 +119,7 @@ y_fit = norm.pdf(x_fit, p[0], p[1])
 y1 = max(df['Peak'])+0.1
 y2 = min(df['Peak'])-0.1
 
-plt.style.use('ggplot')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 gs = gridspec.GridSpec(2, 2)
 fig = plt.figure(figsize=(16, 9))
 ax1 = fig.add_subplot(gs[0, 0])

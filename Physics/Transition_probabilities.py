@@ -43,7 +43,7 @@ area4 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[4]))
 print(area0[0]*100, area1[0]*100, area2[0]*100, area3[0]*100)
 val = [area0[0]*100, area1[0]*100, area2[0]*100, area3[0]*100, area4[0]*100]
 var = ord('%')
-plt.style.use('ggplot')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 gs = gridspec.GridSpec(2, 2)
 fig = plt.figure(figsize=(16, 9))
 ax1 = fig.add_subplot(gs[0, :])

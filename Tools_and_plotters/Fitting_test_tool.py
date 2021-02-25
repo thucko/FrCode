@@ -76,7 +76,7 @@ y_fit = voigt(x_fit, p_fit)
 residuals = y2 - voigt(x_step, p_fit)
 normres = (y2 - voigt(x_step, p_fit))/y_e
 
-plt.style.use('ggplot')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 gs = gridspec.GridSpec(2, 2)
 fig = plt.figure(figsize=(16, 9))
 ax1 = fig.add_subplot(gs[0, :])
