@@ -16,16 +16,19 @@ n_e = 0.1215
 photon_energy = h*(c/wavelength)
 
 rate = []
+
 for ext in extinction_ratio:
     power_eff = input_power * power_buildup * ext
     intensity = power_eff / area
     photon_flux = intensity / photon_energy
-    rate.append(photo_cross_section*photon_flux*n_e)
+    rate.append(0.2*photo_cross_section*photon_flux*n_e)
 
-time = np.arange(0, 2, 0.001)
+time = np.arange(0, 5, 0.00001)
 N0 = 1e5
+
 N = []
 for R in rate:
+    print(R,":",1/R)
     N.append(N0*np.exp(-R*time))
 
 plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')

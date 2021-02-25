@@ -3,8 +3,8 @@ In this code I will try to calculate the atom number. If this works well I will 
 LabView in an attempt to read out real time atom number instead of ROI
 '''
 import numpy as np
-from photons import AtomicState
-from photons import Transition
+from transition_rates import AtomicState
+from transition_rates import Transition
 import matplotlib.pyplot as plt
 
 '''Some constants'''

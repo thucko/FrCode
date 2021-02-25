@@ -10,7 +10,7 @@ from sympy.solvers import solve
 from sympy import Symbol
 
 
-calculate_loss = False
+calculate_loss = True
 
 
 c = 3e10  # speed of light in cm/s
@@ -21,10 +21,10 @@ R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 496e-7  # Wavelength of light in cm
 k = 0
 
-Ref1 = 0.99995 # Reflection of M1
+Ref1 = 0.9991 # Reflection of M1
 Ref2 = 0.99995 # Reflection of M2
-T1 = 50E-6  # Transmission of M1
-T2 = 50E-6  # Transmission of M2
+T1 = 1-Ref1  # Transmission of M1
+T2 = 1-Ref2  # Transmission of M2
 
 
 
@@ -98,7 +98,7 @@ print("Reflection + Transmission gain = %.4f" % I)
 #print("Intra-cavity Losses = %.4f" % loss)
 
 '''Plot the general cases for the phase and gains'''
-plt.style.use('cern_root')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 gs = gridspec.GridSpec(3, 2)
 fig = plt.figure()
 ax1 = fig.add_subplot(gs[0, 0])

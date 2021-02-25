@@ -350,10 +350,10 @@ if __name__ == '__main__':
     TR_ss = Transition(initial_state='G', final_state='E')
 
     # lets define the power (W) of the laser and beam radius (m)
-    #power = 50e-3*3882*0.74*0.8
-    #r = 207e-6
-    power = 50e-3
-    r=1e-3
+    power = 50e-3*3882*0.74*0.8
+    r = 207e-6
+    #power = 50e-3
+    #r=1e-3
     TR_ss.transition_rate_forb(atom=atom_use, hf_split=[G.hf_split, E.hf_split], tran_freq=E.freq,
                                lifetime=E.lifetime, P=power, beam_radius=r, k_vec=(0, 1, 0), E_laser=(1j*(0.707), 0, 0.707))
     TR_ss.transition_rate.to_csv('rate_table.csv')
