@@ -83,6 +83,7 @@ class ScopeWaveform:
                 if do_avg == True:
                     yvals = d[j].to_numpy()[1:-1]
                     self.y_avg.append(np.mean(yvals.reshape(-1, n), axis=1))
+                    print(j, np.mean(self.y_avg), np.std(yvals))
 
                     print('done')
 
