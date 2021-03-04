@@ -107,6 +107,7 @@ class Transition:
         self.transition_prob = {}
         self.transition_freq = {}
         self.transition_rate = pd.DataFrame(columns=['F', 'F`', 'm', 'm`','Rate', 'AM1_hf(AU)','AM1_rel(AU)', 'Ratio(rel/hf)', 'Gilbert Coeff. squared'])
+        self.oscillator_strength = []
 
 
     def get_transition_freq(self, F_init, g_hf, e_hf, freq):
@@ -275,7 +276,7 @@ class Transition:
                 if KroneckerDelta(Fi, Ff + 1):
                     Atotal = Arel + Ahf
                 elif KroneckerDelta(Fi, Ff - 1):
-                    Atotal = Arel - Ahf
+                    Atotal = Arel + Ahf
                 elif KroneckerDelta(Fi, Ff):
                     Atotal = Arel
                 R = R0 * Atotal * np.conj(Atotal)  # calculate the Rate # 07/10/20: currently have it only for hf.
@@ -304,8 +305,15 @@ class Transition:
                         'Gilbert Coeff. squared': GCsquared
                     }, ignore_index=True)
             j = j + 1
+    def get_oscillator_str(self, rates, wavelength):
 
+        tr_amp = np.array(np.float64(rates['AM1_hf(AU)']) + np.float64(rates['AM1_rel(AU)']))*M1_AU2SI*1e-2
+        summed_amp = sum(tr_amp)**2
+        os_srt = (4*np.pi*c*e_mass)/(3*h_bar*e_charge**2*wavelength)*tr_amp**2
+        self.oscillator_strength.append(os_srt)
         print('done')
+
+    print('done')
 
 
 
@@ -355,11 +363,13 @@ if __name__ == '__main__':
     #power = 50e-3
     #r=1e-3
     TR_ss.transition_rate_forb(atom=atom_use, hf_split=[G.hf_split, E.hf_split], tran_freq=E.freq,
-                               lifetime=E.lifetime, P=power, beam_radius=r, k_vec=(0, 1, 0), E_laser=(1j*(0.707), 0, 0.707))
+                               lifetime=E.lifetime, P=power, beam_radius=r, k_vec=(0, 1, 0), E_laser=(0, 0, 1))
+    TR_ss.get_oscillator_str(rates=TR_ss.transition_rate, wavelength=506e-9)
     TR_ss.transition_rate.to_csv('rate_table.csv')
     pd.set_option("max_rows", None, "max_columns", None, "expand_frame_repr", False)
     print('Rate calculations for %s' % atom_use)
     print(TR_ss.transition_rate.to_string(index=False, justify='center'))
+    print('Average Rate: %.3e per second per atom' %np.mean(np.float64(TR_ss.transition_rate['Rate'])))
 
 
     print('Done')

@@ -33,3 +33,11 @@ ytick.minor.width: 0.9
 grid.linestyle: :
 grid.color: b0b0b0 
 grid.linewidth: 1.2
+
+#Axes Propterties
+#axes.prop_cycle: cycler('color', ['005fff', 'ff001b', '089b00', 'ff6c00', '00c9ce', 'c600b7'])
+                                            # color cycle for plot lines
+                                            # as list of string colorspecs:
+                                            # single letter, long name, or
+                                            # web-style hex
+axes.prop_cycle: cycler('color', ['FF0000', '0000FF', '008000','FF00FF', '800000', '000080', '00FF00', '800080'])

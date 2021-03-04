@@ -10,7 +10,12 @@ from sympy.solvers import solve
 from sympy import Symbol
 
 
-calculate_loss = True
+calculate_loss = False
+
+
+def lorentizan (x, x0,gamma):
+    L = (1/(2*np.pi))*(gamma/((x-x0)**2+(gamma/2)**2))
+    return L
 
 
 c = 3e10  # speed of light in cm/s
@@ -18,7 +23,7 @@ inch_to_cm = 2.54
 L = 16  # length of cavity
 R1 = 100.0  # Radius of curvature of M1 in cm
 R2 = 100.0  # Radius of curvature of M2 in cm
-wavelength = 496e-7  # Wavelength of light in cm
+wavelength = 506e-7  # Wavelength of light in cm
 k = 0
 
 Ref1 = 0.9991 # Reflection of M1
@@ -29,7 +34,7 @@ T2 = 1-Ref2  # Transmission of M2
 
 
 vFSR = c/(2*L)
-dL = (wavelength/2)*100e3/vFSR  # Stability of the cavity
+dL = (wavelength*1e-2/2)*100e3/vFSR  # Stability of the cavity
 g1 = 1-(L/R1)
 g2 = 1-(L/R2)
 g = g1*g2
@@ -40,13 +45,13 @@ w0 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g*(1-g)/(g1+g2-2*g)**2))  # beam waist
 w1 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g2/(g1*(1-g))))
 w2 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g1/(g2*(1-g))))
 
-if calculate_loss == False:
+if calculate_loss is False:
     a = 0 # 4*np.pi*k/wavelength # loss coefficient
     gm = np.sqrt(Ref1 * Ref2) * np.exp(-a * 2 * L)
     F = np.pi * np.sqrt(gm) / (1 - gm)
     t = L * F / (np.pi * c)
 
-elif calculate_loss == True:
+elif calculate_loss is True:
     b = 0.903
     t = (1/b)*1E-6
     A = (t*c/L)
@@ -127,4 +132,5 @@ ax6.plot(dv, phi_ref)
 ax6.set_xlabel(r"Detuning $\delta$ (MHz)")
 ax6.set_ylabel(r'$\Phi_{refl}$')
 plt.show()
+
 print('Done')
