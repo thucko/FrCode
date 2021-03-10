@@ -10,7 +10,7 @@ from sympy.solvers import solve
 from sympy import Symbol
 
 
-calculate_loss = False
+calculate_loss = True
 
 
 def lorentizan (x, x0,gamma):
@@ -26,8 +26,8 @@ R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 506e-7  # Wavelength of light in cm
 k = 0
 
-Ref1 = 0.9991 # Reflection of M1
-Ref2 = 0.99995 # Reflection of M2
+Ref1 = 0.9991*(1.000025) # Reflection of M1
+Ref2 = 0.99995*(1.0000025) # Reflection of M2
 T1 = 1-Ref1  # Transmission of M1
 T2 = 1-Ref2  # Transmission of M2
 
@@ -52,14 +52,20 @@ if calculate_loss is False:
     t = L * F / (np.pi * c)
 
 elif calculate_loss is True:
-    b = 0.903
-    t = (1/b)*1E-6
+    b = 1.145
+    t = b*1E-6
+    dt = 0.0002e-6
+    dLen = 0.1
     A = (t*c/L)
     x = Symbol('x')
     gm_cal = solve(x**0.5/(1-x)-A, x)
     gm = np.float64(gm_cal[0])
     a = -(1/(2*L))*np.log(gm**2/(Ref1*Ref2))
     F = np.pi * np.sqrt(gm) / (1 - gm)
+    F2 = np.pi*t*c/L
+    dF = F*((dt/t)**2+(dLen/L)**2)**0.5
+    dgm = gm*(2*np.pi/(F*(4*F**2+np.pi**2)**0.5))*dF
+    print(dF)
 
 vFWHM = vFSR/F  # cavity linewidth
 ''' General Case'''
@@ -79,6 +85,8 @@ phi_ref = np.arctan(-T1*gm*np.sin(dPhi)/(-Ref1*gamma+T1*gm*(np.cos(dPhi)-1)))
 
 ''' For on resonance '''
 G = T1/(1-gm)**2
+if calculate_loss is True:
+    dG = G*(2/(1-gm))*dgm
 RefG = (Ref1 - (Ref1+T1)*gm)**2/(Ref1*(1-np.sqrt(Ref1*Ref2))**2)
 tranG = T1*T2*gm/(np.sqrt(Ref1*Ref2)*(1-gm)**2)
 I = tranG+RefG

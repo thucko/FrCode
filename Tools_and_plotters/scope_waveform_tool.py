@@ -67,13 +67,14 @@ class ScopeWaveform:
             if is_fft is True:
                 d[col_name[0]] = (np.float64(d[col_name[0]])) * (np.float64(d[col_name[-1]][0]))
             else:
-                d[col_name[0]] = (np.float64(d[col_name[0]])) / (np.float64(d[col_name[-1]][0]))
+                d[col_name[0]] = (np.float64(d[col_name[0]])) * (np.float64(d[col_name[-1]][0]))
             if do_avg is True:
                 x_vals = d[col_name[0]]
-                ratio = (len(x_vals) - 1) / x_vals.iloc[-1]
-                n = int(t_avg * ratio)  # get for reshape, number in front is average over time
-                len_range = x_vals.iloc[-1] * n / (len(x_vals) - 1)
-                self.x_avg = np.arange(2, x_vals.iloc[-1], len_range)
+                #ratio = (len(x_vals) - 1) / x_vals.iloc[-1]
+                n = int(t_avg/(np.float64(d[col_name[-1]][0])))  # get for reshape, number in front is average over
+                # time
+                len_range = d.shape[0]/(n*10)
+                self.x_avg = np.arange(2, (x_vals.iloc[-1]+(np.float64(d[col_name[-1]][0]))), 2)/len_range
             i = 0
             for j in col_name[1:-1]:
                 d[j] = (np.float64(d[j]))
@@ -89,7 +90,7 @@ class ScopeWaveform:
                     d[j] = (np.float64(d[j] / norm_laser))
 
                 if do_avg is True and j != 'Laser':
-                    yvals = d[j].to_numpy()[1:-1]
+                    yvals = d[j].to_numpy()
                     self.y_avg.append(np.mean(yvals.reshape(-1, n), axis=1))
                     print(j, np.mean(self.y_avg[i]), np.std(self.y_avg[i]))
                     min_val = min(yvals)
@@ -126,13 +127,13 @@ if __name__ == '__main__':
 
             if laser_norm is True:
                 if pair[i][1] != 'Laser':
-                    plt.plot(x, df[pair[i][1]], label=(pair[i][1]+' (Normalized to laser power)'))
+                    #plt.plot(x, df[pair[i][1]], label=(pair[i][1]+' (Normalized to laser power)'))
                     if do_avg is True and (pair[i][1] != 'Laser'):
                         plt.plot(data.x_avg, data.y_avg[n], '-*',label='Average of %i ms' % t_avg, linewidth=3.0, ms=10.0)
                         n = n+1
 
             else:
-                plt.plot(x, df[pair[i][1]], label=pair[i][1])
+                plt.plot(x, df[pair[i][1]], 'o', label=pair[i][1])
                 if do_avg is True and (pair[i][1] != 'Laser'):
                     plt.plot(data.x_avg, data.y_avg[n], '-*',label='Average of %i ms' % t_avg, linewidth=3.0, ms=10.0)
                     n = n + 1
@@ -143,7 +144,7 @@ if __name__ == '__main__':
         plt.text(1, 0.8, r'Fit Function: $f(x) = ae^{-x/b}+c$', size=16)
 
 
-    plt.title(r'PBC Transmission (Cavity Not Screwed Down)')
+    plt.title(r'PBC Transmission (decay)')
     if is_fft is True:
         plt.xlabel('Frequency (kHz)')
         plt.ylabel('Power (dBm)')
@@ -152,7 +153,7 @@ if __name__ == '__main__':
             plt.ylabel('Normalized Voltage')
         else:
             plt.ylabel('Voltage')
-        plt.xlabel(r'Time (ms)')
+        plt.xlabel(r'Time (minutes)')
     plt.ylim(0)
     plt.legend()
     plt.show()
