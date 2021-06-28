@@ -21,13 +21,13 @@ from re import search
 is_fft = False
 is_norm = False
 x1 = 0
-x2 = 10
+x2 = 5
 is_log = False
 is_chop = False
 do_fit = True
 do_avg = False
 laser_norm = False
-ttl_time = 5e-3
+ttl_time = 5
 t_avg = 2
 t_int = 2
 
@@ -48,13 +48,15 @@ def powermW(x):
     P = np.float64(10 ** (x / 10))
     return P
 
-
-def fun(x, a, b, c):
-    f = a * np.exp(-x / b) + c
-    #f = c * (a - np.exp(-x / b))
-    #f = c*(a+b*x)
-    return f
-
+if is_log is True:
+    def fun(x, a, b):
+        f = a+b*x
+        return f
+else:
+    def fun(x, a, b, c):
+        f = a * np.exp(-x / b) + c
+        #f = c * (a - np.exp(-x / b)
+        return f
 
 def lorentzian(x, a, b, c):
     numerator = (b / 2) ** 2
@@ -93,29 +95,41 @@ class ScopeWaveform:
             else:
                 d[col_name[0]] = (np.float64(d[col_name[0]])) / (np.float64(d[col_name[-1]][0]))
             if is_chop is True:
-                ttl_indx = int(ttl_time / np.float64(d[col_name[-1]][0])) - 1
-                ttl = d[col_name[-2]].to_numpy(dtype=np.float)
-                idx = (ttl > 2.5) * (ttl < 6)
-                ttl_fl_indx = np.where(idx)[0]
-                self.x_chop = d[col_name[0]][ttl_fl_indx]
-            if do_avg is True:
-                n = int(t_avg / (np.float64(d[col_name[-1]][0])))
-                mod_x = np.mod(len(d[col_name[0]]), n)
-                if mod_x != 0:
-                    x_vals = d[col_name[0]].to_numpy()[:-mod_x]
-                else:
-                    x_vals = d[col_name[0]].to_numpy()
-                # ratio = (len(x_vals) - 1) / x_vals.iloc[-1]
-                # get for reshape, number in front is average over
-                # time
-                #len_range = d.shape[0] / (n * 10)
-                self.x_avg = x_vals[0::n] + t_avg
+                chop_test = np.array_split(d[col_name[0]], 20)
+                comb = chop_test[1::2]
+                self.x_chop = np.concatenate(comb)
+                if do_avg is True:
+                    n = int(t_avg / (np.float64(d[col_name[-1]][0])))
+                    mod_x = np.mod(len(self.x_chop), n)
+                    if mod_x != 0:
+                        x_vals = self.x_chop[:-mod_x]
+                    else:
+                        x_vals = self.x_chop
+                    # ratio = (len(x_vals) - 1) / x_vals.iloc[-1]
+                    # get for reshape, number in front is average over
+                    # time
+                    # len_range = d.shape[0] / (n * 10)
+                    self.x_avg = x_vals[0::n]
+            else:
+                if do_avg is True:
+                    n = int(t_avg / (np.float64(d[col_name[-1]][0])))
+                    #n = int(t_avg / 1e-6)
+                    mod_x = np.mod(len(d[col_name[0]]), n)
+                    if mod_x != 0:
+                        x_vals = d[col_name[0]].to_numpy()[:-mod_x]
+                    else:
+                        x_vals = d[col_name[0]].to_numpy()
+                    # ratio = (len(x_vals) - 1) / x_vals.iloc[-1]
+                    # get for reshape, number in front is average over
+                    # time
+                    #len_range = d.shape[0] / (n * 10)
+                    self.x_avg = x_vals[0::n]+t_avg
             i = 0
             for j in col_name[1:-1]:
                 d[j] = (np.float64(d[j]))
                 d_avg = 0.011
                 if is_log is True:
-                    d[j] = -np.log(d[j]/1.15)
+                    d[j] = -np.log(abs(d[j]))
                 if laser_norm is True and j != 'Laser':
                     laser_val = np.float64(d['Laser'])
                     max_laser = np.max(laser_val)
@@ -128,19 +142,22 @@ class ScopeWaveform:
                     d[j] = (np.float64(d[j]) / mx)
 
                 if is_chop is True and j != 'TTL':
-                    self.y_chop = d[j][ttl_fl_indx]
+                    chop_test = np.array_split(d[j], 20)
+                    comb = chop_test[1::2]
+                    self.y_chop = np.concatenate(comb)
+
 
                 if do_avg is True and j != 'Laser' and j != 'TTL':
 
                     if is_chop is True:
                         mod_val = np.mod(len(self.y_chop), n)
                         mod_val_2 = np.mod(len(self.y_chop) - mod_val, n)
-                        yvals = self.y_chop.to_numpy()[:-mod_val]
+                        yvals = self.y_chop[:-mod_val]
                         self.y_chop = self.y_chop[:-mod_val]
                         self.x_chop = self.x_chop[:-mod_val]
                         self.y_avg.append(np.mean(yvals.reshape(-1, n), axis=1))
                         r = x_vals[-1] / len(self.y_avg[i])
-                        self.x_avg = np.arange(x_vals[0], x_vals[-1], r)
+                        #self.x_avg = np.arange(x_vals[0], x_vals[-1], r)
                         print(j, np.mean(self.y_avg[i]), np.std(self.y_avg[i]))
                         min_val = min(yvals)
                         max_val = max(yvals)
@@ -154,7 +171,7 @@ class ScopeWaveform:
                             yvals = d[j].to_numpy()[:-mod_val]
                         else:
                            yvals = d[j].to_numpy()
-                        self.y_avg.append(np.mean(yvals.reshape(-1, n), axis=1))
+                        self.y_avg.append(np.mean(yvals.reshape(-1, n*5), axis=1))
                         print(j, np.mean(self.y_avg[i]), np.std(self.y_avg[i]))
                         min_val = min(yvals)
                         max_val = max(yvals)
@@ -181,7 +198,7 @@ if __name__ == '__main__':
         x = np.array(np.float64(df[pair[0][0]]))
         if do_fit is True:
             y = np.array(np.float64(df[pair[0][1]]))
-            popt, pcov = curve_fit(fun, x, y, maxfev=1000)
+            popt, pcov = curve_fit(fun, x, y)
             perr = np.sqrt(np.diag(pcov))
             print(popt, perr)
         n = 0
@@ -195,7 +212,7 @@ if __name__ == '__main__':
                         n = n + 1
 
             else:
-                plt.plot(x, df[pair[i][1]], '-o', label=pair[i][1])
+                plt.plot(x, df[pair[i][1]], '-.', label=pair[i][1])
                 '''if is_chop is True and (pair[i][1] != 'TTL'):
                     #plt.plot(data.x_chop, data.y_chop, '-*', label=' Light ON ')'''
                 if do_avg is True and (pair[i][1] != 'Laser') and (pair[i][1] != 'TTL'):
@@ -203,10 +220,14 @@ if __name__ == '__main__':
                     n = n + 1
 
     if do_fit is True:
-        plt.plot(x, fun(x, *popt), 'k', label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt))
-        # plt.plot(x, lorentzian(x,1, 2.12715, 26.21020155))
-        # plt.text(1, 0.8, r'Fit Function: $f(x) = c(a-e^{-bx})$', size= 16)
-        plt.text(4, 0.005, r'Fit Function: $f(x) = ae^{-x/b} + c$', size=16)
+        if is_log is True:
+            plt.plot(x, fun(x, *popt), 'k', label='fit: a=%5.2f, b=%5.2f' % (popt[0], popt[1]))
+            plt.text(2.5, 6, r'Fit Function: $f(x) = a+bx$', size=16)
+        else:
+            plt.plot(x, fun(x, *popt), 'k', label='fit: a=%5.2f, b=%5.2f, c=%5.2f' % tuple(popt))
+            # plt.plot(x, lorentzian(x,1, 2.12715, 26.21020155))
+            # plt.text(1, 0.8, r'Fit Function: $f(x) = c(a-e^{-bx})$', size= 16)
+            plt.text(2, 0.004, r'Fit Function: $f(x) = ae^{-x/b} + c$', size=16)
 
     plt.title(r'PBC Transmission', size=30)
     if is_fft is True:
@@ -215,11 +236,13 @@ if __name__ == '__main__':
     else:
         if is_norm is True:
             plt.ylabel('Normalized Voltage')
+        elif is_log is True:
+            plt.ylabel('log(V)')
         else:
             plt.ylabel('Voltage (V)', size = 20)
         plt.xlabel(r'Time (ms)', size = 20)
     #plt.ylim(-0.25,1.1)
-    plt.ylim(0)
-    #plt.xlim(x1, x2)
+    #plt.ylim(0,20)
+  #  plt.xlim(x1, x2)
     plt.legend()
     plt.show()
