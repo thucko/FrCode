@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 - Using Matplotlib for subplots of data and residuals
 - plots now contain normalized residuals and reqular residuals
@@ -23,6 +25,7 @@ import matplotlib.pyplot as plt
 import warnings
 import time
 import pyautogui
+import sys
 import os
 from scipy.integrate import quad
 from iminuit.cost import LeastSquares
@@ -109,7 +112,7 @@ class DataManager:
         elif name == 'backward':
             a = 80
             b = 160
-        elif name == 'none':  # New option in case we sit at one frequency
+        elif name == 'full':  # New option in case we sit at one frequency
             a = 0
             b = 160
 
@@ -274,7 +277,7 @@ class GUI:
             popup_width, popup_height, (screen_width - popup_width) / 2, (screen_height - popup_height) / 2))
 
         # Get dir for data
-        self.vardata.set('~/Documents/2020_01_17/')
+        self.vardata.set('~/Documents/')
         tk.Label(self.root, text='Select Data Directory:').place(x=0, y=5)
         dir_path = tk.Entry(self.root, textvariable=self.vardata, width=44)
         dir_path.place(x=0, y=25)
@@ -283,9 +286,10 @@ class GUI:
         dir_button = tk.Button(self.root, image=img, command=self.dir_dialog, width=25, height=20)
         dir_button.place(x=316, y=20)
 
+
         # State select buttons
         funcs = [('Lorentzian', 'lorentzian'), ('Voigt', 'voigt'), ('None', 'none')]
-        scan_direction = [('Forward Scans', 'forward'), ('Backward Scans', 'backward'), ('None', 'none')]
+        scan_direction = [('Forward Scans', 'forward'), ('Backward Scans', 'backward'), ('Full', 'full')]
         scan_sum_state = [('Sum', 'sum'), ('Individual', 'individual')]
         y_state_sel = 75
         y1_init = 20
@@ -356,7 +360,7 @@ class GUI:
 
     # Definition for selecting directory
     def dir_dialog(self):
-        self.vardata.set(askdirectory(initialdir='~/Documents/2020_01_17/'))
+        self.vardata.set(askdirectory(initialdir='~/Documents/'))
         self.data_dir = self.vardata.get()
         self.varfit.set(self.data_dir + '/analysis/')
         self.varerr.set(self.data_dir + '/analysis/')
@@ -419,7 +423,8 @@ class GUI:
         self.fit_path = self.varfit.get()
         self.err_path = self.varerr.get()
         self.figr_path = self.varfig.get()
-        self.root.quit()
+        self.root.destroy()
+
 
     def disable_figs(self):
         self.save_figq = self.varsavefig.get()
@@ -442,8 +447,7 @@ user_states.gui_loop()
 
 # Grabs the directory for the data
 path = user_states.data_dir
-file_list = glob.glob(path + '/*.txt')
-
+file_list = glob.glob(path + '/*.txt')[0:-1]
 # binwidth in ms
 b_width = 2.8
 first_p = 2
@@ -730,20 +734,21 @@ for data in data_for_plotting:
         #plt.show()
 
     elif user_states.fit_select == 'none':
+        fig = plt.figure()
         plt.xlabel('Frequency (MHz)', fontsize=16)
         plt.ylabel('Rate (kHz)', fontsize=16)
         plt.errorbar(data['Freq'], data['rate'], yerr=data['err'], fmt='r-o', ecolor='black', capsize=5, zorder=1)
-        plt.plot(data['Freq'],3.203*(np.exp(-data['Freq'] / 17.04)))
+        #plt.plot(data['Freq'],3.203*(np.exp(-data['Freq'] / 17.04)))
         if user_states.summing_scan == 'individual':
             if user_states.volt_select =='':
-                plt.title(r'Full Scan \#%i ' % q, fontsize=20)
+                plt.title(r'%s Scan \#%i' % (user_states.scan_direc_select, q), fontsize=20)
             else:
-                plt.title(r'Full Scan \#%i @ %s' % (q, user_states.volt_select), fontsize=20)
+                plt.title('%s Scan \#%i @ %s' % (user_states.scan_direc_select, q, user_states.volt_select), fontsize=20)
         elif user_states.summing_scan == 'sum':
             if user_states.volt_select == '':
-                plt.title(r'Full Scan', fontsize=20)
+                plt.title(r'%s Scan' % (user_states.scan_direc_select), fontsize=20)
             else:
-                plt.title('Full Scan @ %s ' % user_states.volt_select, fontsize=20)
+                plt.title('%s Scan @ %s' % (user_states.scan_direc_select, user_states.volt_select), fontsize=20)
             plt.show()
 
 
@@ -755,6 +760,8 @@ for data in data_for_plotting:
     l = l + 1
 if pdf is not None:
     pdf.close()
+
+#os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
 
 #stark = Stark_data(user_states.scan_direc_select, user_states.summing_scan, user_states.fit_select)
 #stark.calc_peakrate(user_states.volt_select, fit_vals)
