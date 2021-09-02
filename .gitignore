@@ -1,8 +1,10 @@
 .idea
+.vscode
 *.txt
 *.csv
 *.ps
 *.pdf
 Physics/__pycache__/
+misc_code
 README.md
 
