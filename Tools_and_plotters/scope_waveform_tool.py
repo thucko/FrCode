@@ -24,7 +24,7 @@ x1 = 0
 x2 = 5
 is_log = False
 is_chop = False
-do_fit = True
+do_fit = False
 do_avg = False
 laser_norm = False
 ttl_time = 5
@@ -112,7 +112,7 @@ class ScopeWaveform:
                     self.x_avg = x_vals[0::n]
             else:
                 if do_avg is True:
-                    n = int(t_avg / (np.float64(d[col_name[-1]][0])))
+                    n = 2000 #int(t_avg / (np.float64(d[col_name[-1]][0])))
                     #n = int(t_avg / 1e-6)
                     mod_x = np.mod(len(d[col_name[0]]), n)
                     if mod_x != 0:
@@ -129,7 +129,7 @@ class ScopeWaveform:
                 d[j] = (np.float64(d[j]))
                 d_avg = 0.011
                 if is_log is True:
-                    d[j] = -np.log(abs(d[j]))
+                    d[j] = -np.log(d[j])
                 if laser_norm is True and j != 'Laser':
                     laser_val = np.float64(d['Laser'])
                     max_laser = np.max(laser_val)
@@ -171,7 +171,7 @@ class ScopeWaveform:
                             yvals = d[j].to_numpy()[:-mod_val]
                         else:
                            yvals = d[j].to_numpy()
-                        self.y_avg.append(np.mean(yvals.reshape(-1, n*5), axis=1))
+                        self.y_avg.append(np.mean(yvals.reshape(-1, n), axis=1))
                         print(j, np.mean(self.y_avg[i]), np.std(self.y_avg[i]))
                         min_val = min(yvals)
                         max_val = max(yvals)
@@ -227,9 +227,9 @@ if __name__ == '__main__':
             plt.plot(x, fun(x, *popt), 'k', label='fit: a=%5.2f, b=%5.2f, c=%5.2f' % tuple(popt))
             # plt.plot(x, lorentzian(x,1, 2.12715, 26.21020155))
             # plt.text(1, 0.8, r'Fit Function: $f(x) = c(a-e^{-bx})$', size= 16)
-            plt.text(2, 0.004, r'Fit Function: $f(x) = ae^{-x/b} + c$', size=16)
+            plt.text(2, np.mean(y), r'Fit Function: $f(x) = ae^{-x/b} + c$', size=16)
 
-    plt.title(r'PBC Transmission', size=30)
+    plt.title(r'PBC (locked) Transmission', size=30)
     if is_fft is True:
         plt.xlabel('Frequency (kHz)', size = 20)
         plt.ylabel('Power (dBm)')
@@ -242,7 +242,7 @@ if __name__ == '__main__':
             plt.ylabel('Voltage (V)', size = 20)
         plt.xlabel(r'Time (ms)', size = 20)
     #plt.ylim(-0.25,1.1)
-    #plt.ylim(0,20)
+    plt.ylim(0)
   #  plt.xlim(x1, x2)
     plt.legend()
     plt.show()
