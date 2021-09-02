@@ -9,7 +9,7 @@ wavelength = 506e-9
 power_buildup = 3882
 input_power = 50e-3 # laser power in watts
 area = np.pi*0.0207**2 # beam area in cm^2
-extinction_ratio = [1, 1/10000, 1/400000, 1/1000000]
+extinction_ratio = [1, 1/10000, 1/755555, 1/1000000]
 
 photo_cross_section = 2.08e-17 # taken for photoionization cross section paper
 n_e = 0.1215
