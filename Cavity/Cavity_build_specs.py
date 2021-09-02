@@ -53,7 +53,7 @@ if calculate_loss is False:
     t = L * F / (np.pi * c)
 
 elif calculate_loss is True:
-    b = 1.02
+    b = 1.11
     t = b*1E-6
     dt = 0.01e-6
     dLen = 0.1
