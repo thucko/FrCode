@@ -2,7 +2,7 @@
 
 '''
 - Using Matplotlib for subplots of data and residuals
-- plots now contain normalized residuals and reqular residuals
+- plots now contain normalized residuals and regular residuals
 -
 Author: Tim Hucko
 
@@ -16,6 +16,7 @@ from tkinter.filedialog import asksaveasfile
 from tkinter import messagebox
 import glob
 from iminuit import Minuit
+from iminuit.util import propagate
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.special import wofz, voigt_profile
@@ -32,25 +33,17 @@ from iminuit.cost import LeastSquares
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# Lorentzian function
-'''def lorentzian(x, p):
-    # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2)
-    # Including and exponetial decay
-    numerator = (p[2] / 2) ** 2
-    decay = (np.exp(-x / p[4]))
-    denominator1 = ((x - (p[3])) ** 2 + (p[2] / 2) ** 2)
-    background = p[0]
-    L = background + decay*p[1] * (numerator / denominator1)
-    return L'''
+transition_type = r'Burst signal at 110 MHz, Power = 165 $\mu$W'
 
 def lorentzian(x, p):
-    s0 = p[5]
-    N = ((2/p[2])**2)*np.sqrt(1+s0)/(s0*np.pi)
-    numerator = (s0/(s0+1))*(p[2] / 2)
-    denominator = (1 + (2*(x - p[3])/(p[2]*np.sqrt(1+s0)))**2)
+    # Here we use:(gamma/2)^2/((x-x0)^2+(gamma/2)^2) Normalized to hieght
+    # (gamma/2pi) is normalized to area
+    # Including an exponetial decay
+    numerator = (p[2]/(2*np.pi))
+    decay = np.exp(-x/p[4])
+    denominator1 = ((x - (p[3])) ** 2 + (p[2] / 2) ** 2)
     background = p[0]
-    decay = (np.exp(-x / p[4]))
-    L = background + p[1]*N*(numerator / denominator)*decay
+    L = background + p[1] * decay*(numerator / denominator1)
     return L
 
 
@@ -73,7 +66,7 @@ def Parameters(data, x, f):
     # Lorentzain: p = [Offset, Height, FWHM, Center, lifetime]
     # Voigt: p = [Offset, Height, FWHM_L, FWHM_G, Center, Liftime]
     if f == 'lorentzian':
-        p = np.array((np.min(data), np.max(data), 3.5, x[np.argmax(data)], 350, 1))
+        p = np.array((np.min(data), np.max(data), 3.5, x[np.argmax(data)],400))
         return p
     elif f == 'voigt':
 
@@ -104,20 +97,20 @@ class DataManager:
         self.x_val = []
         self.y_err = []
 
-    def data_select(self, name, data, x):
+    def data_select(self, name, data, x, b_width, pps):
 
         if name == 'forward':
-            a = 0
-            b = 80
+            a = 10
+            b = 70
         elif name == 'backward':
             a = 80
             b = 160
         elif name == 'full':  # New option in case we sit at one frequency
-            a = 0
-            b = 160
+            a = 5
+            b = 155
 
         self.y_val.extend(data[a:b]/(b_width * pps))  # converts counts into rate (Hz)
-        self.x_val.extend(x[a:b])
+        self.x_val.extend(x[a:b]*120/160)
         self.y_err.extend(np.sqrt(data[a:b]) / (b_width * pps)) # transforms the uncertainty into rate
 
 
@@ -128,22 +121,29 @@ class MinimizationRoutine:
         self.name = name
         self.fit = []
         self.err = []
+        self.covar = np.float64
+        self.mvalues = np.float64
 
     def minimzation(self, name, par):
+        m = Minuit(chi2, par)
         if name == 'voigt':
-            errors = (10, 10, 0.01, 0.001, .1, 10)
+            errors = (1, 1, 0.01, 0.001, .1, 10)
             limits = (None, None, (0.1, 9), (1, 6), None, (1, 600))
             fixed = (False, False, False, False, False, False)
 
         elif name == 'lorentzian':
-            errors = (10, 10, 0.01, .1, 1, 1)
-            limits = (None, None, (0.01, 6), None, (1, 600), (0, 1E6))
-            fixed = (False, False, False, False, False, False)
-            '''errors = (10, 10, 0.01, .1, 1, 0.1)
-            limits = (None, None, (0.01, 6), None, (1, 600), (0, 1E6))
-            fixed = (False, False, False, False, False, False, False)'''
+            m.errors = (0.1,0.1,0.1,0.1,0.1)
+            m.errordef = Minuit.LEAST_SQUARES
+            m.fixed[0] = False
+            m.fixed[1] = False
+            m.fixed[2] = False 
+            m.fixed[3] = False
+            m.fixed[4] = False
+            m.limits = ((0,None), (0,None), (0,None), (0,None), (0,None))
+            
 
-        m = Minuit.from_array_func(chi2, par, error=errors, limit=limits, fix=fixed, errordef=1, pedantic=False)
+           
+
         m.migrad()
 
         if name == 'voigt':
@@ -153,10 +153,14 @@ class MinimizationRoutine:
 
         elif name == 'lorentzian':
             #               [Offset        , Height        , FWHM_L        , Center        , lifetime      ]
-            #self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"]])
-            #self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]])
-            self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]])
-            self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]])
+            self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"]])
+            self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"]])
+            self.covar = m.covariance
+            self.mvalues = m.values
+            # self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], 0])
+            # self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], 0])
+            # self.fit.extend([m.values["x0"], m.values["x1"], m.values["x2"], m.values["x3"], m.values["x4"], m.values["x5"]])
+            #self.err.extend([m.errors["x0"], m.errors["x1"], m.errors["x2"], m.errors["x3"], m.errors["x4"], m.errors["x5"]])
 
 
 # get time stamps from raw data file
@@ -277,7 +281,7 @@ class GUI:
             popup_width, popup_height, (screen_width - popup_width) / 2, (screen_height - popup_height) / 2))
 
         # Get dir for data
-        self.vardata.set('~/Documents/')
+        #self.vardata.set=('~/Documents/')
         tk.Label(self.root, text='Select Data Directory:').place(x=0, y=5)
         dir_path = tk.Entry(self.root, textvariable=self.vardata, width=44)
         dir_path.place(x=0, y=25)
@@ -322,8 +326,7 @@ class GUI:
 
         button_state_val = tk.Button(self.root, text="Okay", command=self.get_vals, height=1, width=15)
         button_state_val.place(x=218, y=y_state_sel + 145)
-        # button_cancel = tk.Button(self.root, text="Cancel", command=self.end_program, height=1, width=10)
-        # button_cancel.place(x=252, y=145)
+
 
         # Save the fit data
 
@@ -360,7 +363,7 @@ class GUI:
 
     # Definition for selecting directory
     def dir_dialog(self):
-        self.vardata.set(askdirectory(initialdir='~/Documents/'))
+        self.vardata.set(askdirectory(initialdir='~/Documents/Francium'))
         self.data_dir = self.vardata.get()
         self.varfit.set(self.data_dir + '/analysis/')
         self.varerr.set(self.data_dir + '/analysis/')
@@ -423,7 +426,7 @@ class GUI:
         self.fit_path = self.varfit.get()
         self.err_path = self.varerr.get()
         self.figr_path = self.varfig.get()
-        self.root.destroy()
+        self.root.quit()
 
 
     def disable_figs(self):
@@ -439,329 +442,328 @@ class GUI:
 
     def end_program(self):
         print('Terminating program. Goodbye!')
+        run_program = False
         exit()
-
-# GUI section
+run_program = True
 user_states = GUI()
-user_states.gui_loop()
 
-# Grabs the directory for the data
-path = user_states.data_dir
-file_list = glob.glob(path + '/*.txt')[0:-1]
-# binwidth in ms
-b_width = 2.8
-first_p = 2
-last_p = 8
-pps = last_p - first_p
+while run_program is True:
+    # GUI section
+    user_states.gui_loop()
 
-# Dataframe for storing fit values
-'''fit_vals = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM_L', 'FWHM_G', 'Peak Position', 'Lifetime',
-                                 'Reduced Chi Squared'])
-error_vals = pd.DataFrame(columns=['Time', 'Offset err', 'Peak Height err', 'FWHM_L err', 'FWHM_G err',
-                                   'Peak Position err', 'Lifetime err'])'''
-fit_vals = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM_L', 'FWHM_G', 'Peak Position', 'Lifetime','Saturation',
-                                 'Reduced Chi Squared', 'Offset err', 'Peak Height err', 'FWHM_L err', 'FWHM_G err',
-                                'Peak Position err', 'Lifetime err', 'Saturation err'])
+    # Grabs the directory for the data
+    path = user_states.data_dir
+    file_list = glob.glob(path + '/*.txt')
+    file_list = sorted(file_list)[0:-1]
 
+    bin_num = 79           
+    # binwidth in ms
+    b_width = 0.2
+    first_p = 0
+    last_p = 79
+    pps = last_p - first_p
 
-sum_data = pd.DataFrame(columns=['Counts'])
-data_raw = np.array([])
-data_time = []
-n_of_scans = len(file_list)
+    # Dataframe for storing fit values
 
-# get time when file was created, this is important for looking at indvidual scans
-file_ls = GetTimes()
-file_ls.get_time(file_list)
-acq_time = file_ls.list_files
-
-# Prep for saving fit data
-if not os.path.exists(os.path.dirname(user_states.fit_path)):
-    os.makedirs(os.path.dirname(user_states.fit_path))
-    f1 = open((user_states.fit_name+'.txt'), 'a')
-    f1.close()
-
-if not os.path.exists(os.path.dirname(user_states.err_path)):
-    os.makedirs(os.path.dirname(user_states.err_path))
-    f2 = open((user_states.err_name+'.txt'), 'a')
-    f2.close()
-if user_states.save_figq == 'yes':
-    if not os.path.exists(os.path.dirname(user_states.figr_path)):
-        os.makedirs(os.path.dirname(user_states.figr_path))
-        f3 = open((user_states.figr_name+'.txt'), 'a')
-        f3.close()
+    fit_vals = pd.DataFrame(columns=['Time', 'Offset', 'Peak Height', 'FWHM_L', 'FWHM_G', 'Peak Position', 'Lifetime',
+                                    'Reduced Chi Squared', 'Offset err', 'Peak Height err', 'FWHM_L err', 'FWHM_G err',
+                                    'Peak Position err', 'Lifetime err'])
 
 
+    sum_data = pd.DataFrame(columns=['Counts'])
+    data_raw = np.array([])
+    data_time = []
+    n_of_scans = len(file_list)
 
-# begin minimization
-print("Starting Minimization...")
-data_for_plotting = []
+    # get time when file was created, this is important for looking at indvidual scans
+    file_ls = GetTimes()
+    file_ls.get_time(file_list)
+    acq_time = file_ls.list_files
 
-# if user selects to look at each scan individually
-if user_states.summing_scan == 'individual':
-    # Use file name to get data from file, the files should be chronologically ordered at this point
-    for index, row in acq_time.iterrows():
-        times = row['Time']
-        file_path = row['File path']
-        data_raw = (np.genfromtxt(file_path))
+    # Prep for saving fit data
+    if not os.path.exists(os.path.dirname(user_states.fit_path)):
+        os.makedirs(os.path.dirname(user_states.fit_path))
+        f1 = open((user_states.fit_name+'.txt'), 'a')
+        f1.close()
+
+    if not os.path.exists(os.path.dirname(user_states.err_path)):
+        os.makedirs(os.path.dirname(user_states.err_path))
+        f2 = open((user_states.err_name+'.txt'), 'a')
+        f2.close()
+    if user_states.save_figq == 'yes':
+        if not os.path.exists(os.path.dirname(user_states.figr_path)):
+            os.makedirs(os.path.dirname(user_states.figr_path))
+            f3 = open((user_states.figr_name+'.txt'), 'a')
+            f3.close()
+
+
+
+    # begin minimization
+    print("Starting Minimization...")
+    data_for_plotting = []
+
+    # if user selects to look at each scan individually
+    if user_states.summing_scan == 'individual':
+        # Use file name to get data from file, the files should be chronologically ordered at this point
+        for index, row in acq_time.iterrows():
+            times = row['Time']
+            file_path = row['File path']
+            data_raw = (np.genfromtxt(file_path))
+            data_binned = np.array([])
+            a = []
+
+            # Gather data points an bin them
+            for i in range(0, 160):
+                y_bin = (data_raw[i * bin_num * 1:(i * bin_num* 1) + bin_num * 1])
+                a = sum(y_bin[first_p:last_p])
+                data_binned = np.append(data_binned, a)
+
+            x = np.arange(0, len(data_binned), 1)
+
+            ''' Now to minimize the scans'''
+            data = DataManager(user_states.scan_direc_select)
+            data.data_select(data.name, data_binned, x, b_width, pps)
+            y_data = np.array(data.y_val)
+            x_step = np.array(data.x_val)
+            y_err = np.array(data.y_err)
+            time_stamp = times
+            if user_states.fit_select != 'none':
+                print("Starting Minimization...")
+                p1 = Parameters(y_data, x_step, user_states.fit_select)  # Generate initial parameter guesses for scans
+                val = MinimizationRoutine(user_states.fit_select)
+                val.minimzation(val.name, p1)
+                p_fit = val.fit
+                p_err = val.err
+                x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
+                if val.name == 'lorentzian':
+                    exp_val = lorentzian(x_step, p_fit)
+                    y_fit = lorentzian(x_fit, p_fit)
+                    Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+                    Counting_Rate = lorentzian(p_fit[3], p_fit)
+                    p_fit.insert(3, 'N/A')
+                    p_err.insert(3, 'N/A')
+
+                elif val.name == 'voigt':
+                    exp_val = voigt(x_step, p_fit)
+                    y_fit = voigt(x_fit, p_fit)
+                    Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+                    p_fit.insert(6, 'N/A')
+                    p_err.insert(6, 'N/A')
+
+                repack_data = pd.DataFrame({
+                    'rate': y_data,
+                    'err': y_err,
+                    'Normalized Residuals': (y_data - exp_val) / y_err,
+                    'Residuals': (y_data - exp_val),
+                    'Freq': x_step,
+                })
+
+                fit_vals = fit_vals.append({
+                    'Time': time_stamp,
+                    'Offset': p_fit[0],
+                    'Peak Height': p_fit[1],
+                    'FWHM_L': p_fit[2],
+                    'FWHM_G': p_fit[3],
+                    'Peak Position': p_fit[4],
+                    'Lifetime': p_fit[5],
+                    'Reduced Chi Squared': Red_chi2,
+                    'Offset err': p_err[0],
+                    'Peak Height err': p_err[1],
+                    'FWHM_L err': p_err[2],
+                    'FWHM_G err': p_err[3],
+                    'Peak Position err': p_err[4],
+                    'Lifetime err': p_err[5]
+                }, ignore_index=True)
+
+                fit = pd.DataFrame({
+                    'x_fit': x_fit,
+                    'y_fit': y_fit
+                })
+
+                data_for_plotting.append([repack_data, fit])
+
+                print("Minimization complete")
+                # save the data and errors to csv files
+                fit_vals.to_csv(user_states.fit_path, sep='\t', index=False)
+            elif user_states.fit_select == 'none':
+                repack_data = pd.DataFrame({
+                    'rate': y_data,
+                    'err': y_err,
+                    'Freq': x_step,
+                })
+                data_for_plotting.append(repack_data)
+
+
+    # if user selects to sum all the scans together
+    elif user_states.summing_scan == 'sum':
+        start_end_time = '%s-%s' % (acq_time['Time'].iloc[0], acq_time['Time'].iloc[-1])
+        data0 = []
+        # Use file name to get data from file, the files are chronologically ordered
+        for index, row in acq_time.iterrows():
+            file_path = row['File path']
+            data0.append(np.genfromtxt(file_path))
+        shape = list(data0[0].shape)
+        shape[:0] = [len(data0)]
+        data1 = np.concatenate(data0).reshape(shape)
+        y = data1.sum(axis=0)
         data_binned = np.array([])
         a = []
-
         # Gather data points an bin them
         for i in range(0, 160):
-            y_bin = (data_raw[i * 8 * 1:(i * 8 * 1) + 8 * 1])
+            y_bin = (y[i * bin_num * 1:(i * bin_num * 1) + bin_num * 1])
             a = sum(y_bin[first_p:last_p])
             data_binned = np.append(data_binned, a)
 
         x = np.arange(0, len(data_binned), 1)
-
         ''' Now to minimize the scans'''
         data = DataManager(user_states.scan_direc_select)
-        data.data_select(data.name, data_binned, x)
-        y_data = np.array(data.y_val)
+        data.data_select(data.name, data_binned, x, b_width, pps)
+        y_data = np.array(data.y_val) / n_of_scans
         x_step = np.array(data.x_val)
-        y_err = np.array(data.y_err)
-        time_stamp = times
-        p1 = Parameters(y_data, x_step, user_states.fit_select)  # Generate initial parameter guesses for scans
-        val = MinimizationRoutine(user_states.fit_select)
-        val.minimzation(val.name, p1)
-        p_fit = val.fit
-        p_err = val.err
-        x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
-        if val.name == 'lorentzian':
-            exp_val = lorentzian(x_step, p_fit)
-            y_fit = lorentzian(x_fit, p_fit)
-            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            p_fit.insert(3, 'N/A')
-            p_err.insert(3, 'N/A')
+        y_err = np.array(data.y_err) / n_of_scans
+        if user_states.fit_select != 'none':
+            print("Starting Minimization...")
+            p1 = Parameters(y_data, x_step, user_states.fit_select)  # Generate initial parameter guesses for scans
+            val = MinimizationRoutine(user_states.fit_select)
+            val.minimzation(val.name, p1)
+            p_fit = val.fit
+            p_err = val.err
+            x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
 
-        elif val.name == 'voigt':
-            exp_val = voigt(x_step, p_fit)
-            y_fit = voigt(x_fit, p_fit)
-            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            p_fit.insert(6, 'N/A')
-            p_err.insert(6, 'N/A')
+            if val.name == 'lorentzian':
+                exp_val = lorentzian(x_step, p_fit)
+                y_fit = lorentzian(x_fit, p_fit)
+                Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+                Counting_Rate = lorentzian(p_fit[3], p_fit)
+                crate_err = np.sqrt(Counting_Rate/(b_width*pps))
+                p_fit.insert(3, 'N/A')
+                p_err.insert(3, 'N/A')
+                p_fit.insert(5, 'N/A')
+                p_err.insert(5, 'N/A')
 
-        repack_data = pd.DataFrame({
-            'rate': y_data,
-            'err': y_err,
-            'Normalized Residuals': (y_data - exp_val) / y_err,
-            'Residuals': (y_data - exp_val),
-            'Freq': x_step,
-        })
+            elif val.name == 'voigt':
+                exp_val = voigt(x_step, p_fit)
+                y_fit = voigt(x_fit, p_fit)
+                Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
+                p_fit.insert(6, 'N/A')
+                p_err.insert(6, 'N/A')
 
-        fit_vals = fit_vals.append({
-            'Time': time_stamp,
-            'Offset': p_fit[0],
-            'Peak Height': p_fit[1],
-            'FWHM_L': p_fit[2],
-            'FWHM_G': p_fit[3],
-            'Peak Position': p_fit[4],
-            'Lifetime': p_fit[5],
-            'Reduced Chi Squared': Red_chi2,
-            'Offset err': p_err[0],
-            'Peak Height err': p_err[1],
-            'FWHM_L err': p_err[2],
-            'FWHM_G err': p_err[3],
-            'Peak Position err': p_err[4],
-            'Lifetime err': p_err[5]
-        }, ignore_index=True)
+            repack_data = pd.DataFrame({
+                'rate': y_data,
+                'err': y_err,
+                'Normalized Residuals': (y_data - exp_val) / y_err,
+                'Residuals': (y_data - exp_val),
+                'Freq': x_step,
 
-        fit = pd.DataFrame({
-            'x_fit': x_fit,
-            'y_fit': y_fit
-        })
-        data_for_plotting.append([repack_data, fit])
+            })
 
+            fit_vals = fit_vals.append({
+                'Time': start_end_time,
+                'Offset': p_fit[0],
+                'Peak Height': p_fit[1],
+                'FWHM_L': p_fit[2],
+                'FWHM_G': p_fit[3],
+                'Peak Position': p_fit[4],
+                'Lifetime': p_fit[5],
+                'Reduced Chi Squared': Red_chi2,
+                'Offset err': p_err[0],
+                'Peak Height err': p_err[1],
+                'FWHM_L err': p_err[2],
+                'FWHM_G err': p_err[3],
+                'Peak Position err': p_err[4],
+                'Lifetime err': p_err[5],
+                'Counting Rate (kHz)': Counting_Rate,
+                'rate err': crate_err
+            }, ignore_index=True)
 
-    print("Minimization complete")
-    # save the data and errors to csv files
-    fit_vals.to_csv(user_states.fit_path, sep='\t', index=False)
+            fit = pd.DataFrame({
+                'x_fit': x_fit,
+                'y_fit': y_fit
+            })
+            y_fit, ycov = propagate(lambda p: lorentzian(x_fit, p), val.mvalues, val.covar)
+            yerr_prop = np.diag(ycov) ** 0.5
+            data_for_plotting.append([repack_data, fit])
+            print("Minimization complete")
+            fit_vals.to_csv(user_states.fit_path, sep='\t', index=False)
+        elif user_states.fit_select == 'none':
+            repack_data = pd.DataFrame({
+                'rate': y_data,
+                'err': y_err,
+                'Freq': x_step,
 
-
-# if user selects to sum all the scans together
-elif user_states.summing_scan == 'sum':
-    start_end_time = '%s-%s' % (acq_time['Time'].iloc[0], acq_time['Time'].iloc[-1])
-    data0 = []
-    # Use file name to get data from file, the files are chronologically ordered
-    for index, row in acq_time.iterrows():
-        file_path = row['File path']
-        data0.append(np.genfromtxt(file_path))
-    shape = list(data0[0].shape)
-    shape[:0] = [len(data0)]
-    data1 = np.concatenate(data0).reshape(shape)
-    y = data1.sum(axis=0)
-    data_binned = np.array([])
-    a = []
-    # Gather data points an bin them
-    for i in range(0, 160):
-        y_bin = (y[i * 8 * 1:(i * 8 * 1) + 8 * 1])
-        a = sum(y_bin[first_p:last_p])
-        data_binned = np.append(data_binned, a)
-
-    x = np.arange(0, len(data_binned), 1)
-    ''' Now to minimize the scans'''
-    data = DataManager(user_states.scan_direc_select)
-    data.data_select(data.name, data_binned, x)
-    y_data = np.array(data.y_val) / len(data0)
-    x_step = np.array(data.x_val)
-    y_err = np.array(data.y_err) / len(data0)
-    if user_states.fit_select != 'none':
-        p1 = Parameters(y_data, x_step, user_states.fit_select)  # Generate initial parameter guesses for scans
-        val = MinimizationRoutine(user_states.fit_select)
-        val.minimzation(val.name, p1)
-        p_fit = val.fit
-        p_err = val.err
-        x_fit = np.arange(min(x_step), max(x_step) + 1, 0.1)
-
-        if val.name == 'lorentzian':
-            exp_val = lorentzian(x_step, p_fit)
-            y_fit = lorentzian(x_fit, p_fit)
-            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            p_fit.insert(3, 'N/A')
-            p_err.insert(3, 'N/A')
-            #p_fit.insert(6, 'N/A')
-            #p_err.insert(6, 'N/A')
-
-        elif val.name == 'voigt':
-            exp_val = voigt(x_step, p_fit)
-            y_fit = voigt(x_fit, p_fit)
-            Red_chi2 = chi2(p_fit) / (len(y_data) - len(p_fit))
-            p_fit.insert(6, 'N/A')
-            p_err.insert(6, 'N/A')
-
-        repack_data = pd.DataFrame({
-            'rate': y_data,
-            'err': y_err,
-            'Normalized Residuals': (y_data - exp_val) / y_err,
-            'Residuals': (y_data - exp_val),
-            'Freq': x_step,
-
-        })
-
-        fit_vals = fit_vals.append({
-            'Time': start_end_time,
-            'Offset': p_fit[0],
-            'Peak Height': p_fit[1],
-            'FWHM_L': p_fit[2],
-            'FWHM_G': p_fit[3],
-            'Peak Position': p_fit[4],
-            'Lifetime': p_fit[5],
-            'Saturation': p_fit[6],
-            'Reduced Chi Squared': Red_chi2,
-            'Offset err': p_err[0],
-            'Peak Height err': p_err[1],
-            'FWHM_L err': p_err[2],
-            'FWHM_G err': p_err[3],
-            'Peak Position err': p_err[4],
-            'Lifetime err': p_err[5],
-            'Saturation err':p_err[6]
-        }, ignore_index=True)
-
-        fit = pd.DataFrame({
-            'x_fit': x_fit,
-            'y_fit': y_fit
-        })
-        data_for_plotting.append([repack_data, fit])
-
-        fit_vals.to_csv(user_states.fit_path, sep='\t', index=False)
-    elif user_states.fit_select == 'none':
-        repack_data = pd.DataFrame({
-            'rate': y_data,
-            'err': y_err,
-            'Freq': x_step,
-
-        })
-        data_for_plotting.append(repack_data)
+            })
+            data_for_plotting.append(repack_data)
 
 
 
-'''p_int = [fit_vals['Offset'], fit_vals['Peak Height'], fit_vals['FWHM_L'], fit_vals['FWHM_G'], fit_vals['Peak Position'],
-         fit_vals['Lifetime']]
 
-area = quad(voigt,data_for_plotting[0][1]['x_fit'].iloc[0], data_for_plotting[0][1]['x_fit'].iloc[-1], args=p_int)'''
 
-# Plotting routine
-#matplotlib.use('Cairo')
-plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
+    # Plotting routine
+    #matplotlib.use('Cairo')
+    plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 
-if user_states.save_figq == 'no':
-    pdf = None
-elif user_states.save_figq == 'yes':
-    pdf = PdfPages(user_states.figr_path)
-q = 1
-l = 0
-for data in data_for_plotting:
-    if user_states.fit_select != 'none':
-        gs = gridspec.GridSpec(2, 2)
-        fig = plt.figure(q - 1, figsize=(16, 9))
-        fig.subplots_adjust(left=0.06, bottom=0.08, right=0.95, top=0.95, wspace=0.07, hspace=0.25)
-        ax1 = fig.add_subplot(gs[0, :])
-        ax1.set_xlabel('Frequency (MHz)', fontsize=16)
-        ax1.set_ylabel('Rate (kHz)', fontsize=16)
-        ax2 = fig.add_subplot(gs[1, 0])
-        ax2.set_title('Normalized Residuals', fontsize=16)
-        ax2.set_xlabel('Frequency (MHz)', fontsize=14)
-        ax3 = fig.add_subplot(gs[1, 1])
-        ax3.set_title('Residuals', fontsize=16)
-        ax3.set_xlabel('Frequency (MHz)', fontsize=14)
+    if user_states.save_figq == 'no':
+        pdf = None
+    elif user_states.save_figq == 'yes':
+        pdf = PdfPages(user_states.figr_path)
+    q = 1
+    l = 0
+    for data in data_for_plotting:
+        if user_states.fit_select != 'none':
+            fig = plt.figure(figsize=(8,6))
+            gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
+        
+            fig.subplots_adjust(hspace=0)
+            ax1 = fig.add_subplot(gs[0, 0])
 
-        ax1.text(data[0]['Freq'].iloc[0] + 20, np.max(data[0]['rate']) - 0.1 * np.max(data[0]['rate']),
-                 r'$\chi^2_{reduced}=%.3f$' % fit_vals['Reduced Chi Squared'].iloc[l], fontsize=14)
-        ax1.text(data[0]['Freq'].iloc[0] + 20, np.max(data[0]['rate']) - 0.17 * np.max(data[0]['rate']),
-                 r'$\nu_{peak}=%.3f$ MHz' % fit_vals['Peak Position'].iloc[l], fontsize=14)
-        ax1.text(data[0]['Freq'].iloc[0] + 20, np.max(data[0]['rate']) - 0.24 * np.max(data[0]['rate']),
-                 r'$\delta\nu_{peak}=%.3f$ MHz' % fit_vals['Peak Position err'].iloc[l], fontsize=14)
+            
+            ax1.set_ylabel(r'\textbf{Counting Rate (kHz)}', fontsize=16)
+            ax2 = fig.add_subplot(gs[1, 0])
+            ax2.set_xlabel(r'\textbf{Laser detuning (MHz)}', fontsize=16)
+            ax2.set_ylabel(r'\textbf{Normalized}'+'\n'+r'\textbf{Residuals}', fontsize=16)
+            ax1.sharex(ax2)
+            ax1.set_xlabel('', fontsize=16)
+            ax2.set_ylim(-3,3)
 
-        if user_states.summing_scan == 'individual':
-            if user_states.volt_select =='':
-                ax1.set_title(r'%s Scan \#%i (%s fit) ' % (user_states.scan_direc_select, q, user_states.fit_select),
-                              fontsize=20)
-            else:
-                ax1.set_title('%s Scan \#%i @ %s (%s fit) ' % (user_states.scan_direc_select, q, user_states.volt_select,
-                                                               user_states.fit_select), fontsize=20)
-        elif user_states.summing_scan == 'sum':
-            if user_states.volt_select == '':
-                ax1.set_title(r'%s Scan (%s fit) ' % (user_states.scan_direc_select, user_states.fit_select), fontsize=20)
-            else:
-                ax1.set_title('%s Scan @ %s (%s fit) ' % (user_states.scan_direc_select, user_states.volt_select,
-                                                          user_states.fit_select), fontsize=20)
+            ax1.fill_between(x_fit, y_fit - yerr_prop,  y_fit + yerr_prop, facecolor="b", alpha=0.35)
+            ax1.errorbar(x_step, y_data, yerr=y_err, fmt='ro', ecolor='black', capsize=5, zorder=1)
 
-        ax1.errorbar(data[0]['Freq'], data[0]['rate'], yerr=data[0]['err'], fmt='r-o', ecolor='black',
-                     capsize=5, zorder=1)
-        ax1.plot(data[1]['x_fit'], data[1]['y_fit'], color='b', zorder=2)
-        ax2.plot(data[0]['Freq'], data[0]['Normalized Residuals'], '-o', color='#F06C00')
-        ax3.plot(data[0]['Freq'], data[0]['Residuals'], '-o', color='#D433FF')
-        #plt.show()
+            ax1.plot(x_fit, y_fit, color='b', zorder=2, label='Lorentzain')
 
-    elif user_states.fit_select == 'none':
-        fig = plt.figure()
-        plt.xlabel('Frequency (MHz)', fontsize=16)
-        plt.ylabel('Rate (kHz)', fontsize=16)
-        plt.errorbar(data['Freq'], data['rate'], yerr=data['err'], fmt='r-o', ecolor='black', capsize=5, zorder=1)
-        #plt.plot(data['Freq'],3.203*(np.exp(-data['Freq'] / 17.04)))
-        if user_states.summing_scan == 'individual':
-            if user_states.volt_select =='':
-                plt.title(r'%s Scan \#%i' % (user_states.scan_direc_select, q), fontsize=20)
-            else:
-                plt.title('%s Scan \#%i @ %s' % (user_states.scan_direc_select, q, user_states.volt_select), fontsize=20)
-        elif user_states.summing_scan == 'sum':
-            if user_states.volt_select == '':
-                plt.title(r'%s Scan' % (user_states.scan_direc_select), fontsize=20)
-            else:
-                plt.title('%s Scan @ %s' % (user_states.scan_direc_select, user_states.volt_select), fontsize=20)
+            tick_div = (ax1.get_yticks()[1] - ax1.get_yticks()[0]) / 5
+            ax2.plot(x_step, data[0]['Normalized Residuals'], 'o', color='b')
+            ax2.axhline(y=0, color='black')
             plt.show()
 
+        elif user_states.fit_select == 'none':
+            fig = plt.figure()
+            plt.xlabel('Time (s)', fontsize=16)
+            plt.ylabel('Rate (kHz)', fontsize=16)
+            plt.errorbar(data['Freq'], data['rate'], yerr=data['err'], fmt='r-o', ecolor='black', capsize=5, zorder=1)
+            if user_states.summing_scan == 'individual':
+                if user_states.volt_select =='':
+                    plt.title(r'%s %s Scan \#%i' % (transition_type, user_states.scan_direc_select, q), fontsize=20)
+                else:
+                    plt.title('%s %s Scan \#%i @ %s' % (transition_type, user_states.scan_direc_select, q,
+                                                        user_states.volt_select), fontsize=20)
+            elif user_states.summing_scan == 'sum':
+                if user_states.volt_select == '':
+                    plt.title(r'%s %i %s Scan' % (transition_type, n_of_scans,user_states.scan_direc_select), fontsize=20)
+                else:
+                    plt.title('%s %i %s Scan @ %s' % (transition_type, n_of_scans, user_states.scan_direc_select, user_states.volt_select),
+                              fontsize=20)
+                plt.title("")
+                plt.show()
 
+
+        if pdf is not None:
+            pdf.savefig(fig)
+        plt.close(fig)
+
+        q = q + 1
+        l = l + 1
     if pdf is not None:
-        pdf.savefig(fig)
-    plt.close(fig)
+        pdf.close()
+    print("Graph(s) completed")
 
-    q = q + 1
-    l = l + 1
-if pdf is not None:
-    pdf.close()
 
-#os.execv(sys.executable, [sys.executable, __file__] + sys.argv)
-
-#stark = Stark_data(user_states.scan_direc_select, user_states.summing_scan, user_states.fit_select)
-#stark.calc_peakrate(user_states.volt_select, fit_vals)

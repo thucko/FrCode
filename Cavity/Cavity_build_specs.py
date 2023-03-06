@@ -18,10 +18,10 @@ def lorentizan (x, x0,gamma):
     return L
 
 
-c = 3e10  # speed of light in cm/s
-#c = 2.99702547e10
+# c = 3e10  # speed of light in cm/s
+c = 2.99702547e10
 inch_to_cm = 2.54
-L = 16  # length of cavity
+L = 16.0  # length of cavity
 R1 = 100.0  # Radius of curvature of M1 in cm
 R2 = 100.0  # Radius of curvature of M2 in cm
 wavelength = 506e-7  # Wavelength of light in cm
@@ -31,6 +31,12 @@ Ref1 = 0.9991 # Reflection of M1
 Ref2 = 0.99995 # Reflection of M2
 T1 = 1-Ref1  # Transmission of M1
 T2 = 1-Ref2  # Transmission of M2
+
+dRef1 = 0.01*Ref1
+dRef2 = 0.01*Ref2
+dT1 = 0.01*T1
+dT2 = 0.01*T2
+
 
 
 
@@ -48,7 +54,7 @@ w2 = np.sqrt((L*wavelength/np.pi)*np.sqrt(g1/(g2*(1-g))))
 
 if calculate_loss is False:
     a = 0 # 4*np.pi*k/wavelength # loss coefficient
-    gm = np.sqrt(Ref1 * Ref2 * np.exp(-a * 2 * L))
+    gm = np.sqrt(Ref1 * Ref2)* np.exp(-a * 2 * L)
     F = np.pi * np.sqrt(gm) / (1 - gm)
     t = L * F / (np.pi * c)
 
@@ -57,16 +63,18 @@ elif calculate_loss is True:
     t = b*1E-6
     dt = 0.01e-6
     dLen = 0.1
-    A = (t*c/L)
+    A = (t*c/(1*L))
     x = Symbol('x')
     gm_cal = solve(x**0.5/(1-x)-A, x)
     gm = np.float64(gm_cal[0])
-    a = -(1/(2*L))*np.log(gm**2/(Ref1*Ref2))
+    print(gm_cal, gm)
+    a = (-(1/(2*L))*np.log(gm**2/Ref1*Ref2))
     F = np.pi * np.sqrt(gm) / (1 - gm)
     F2 = np.pi*t*c/L
     dF = F*((dt/t)**2+(dLen/L)**2)**0.5
-    dgm = gm*(2*np.pi/(F*(4*F**2+np.pi**2)**0.5))*dF
+    dgm = gm*(1/F)*dF
     da = a*((dgm*(2/(gm*np.log(gm**2/(Ref1*Ref2)))))**2 + (dLen/L)**2)**0.5
+    # da = ((1/(2*L**2)*np.log(gm**2/Ref1*Ref2)*dLen)**2 +(1/(L*gm)*dgm)**2 + 1/(4*L**2)*((dRef1/Ref1)**2 + (dRef2/Ref2)**2))**0.5
 
 vFWHM = vFSR/F  # cavity linewidth
 ''' General Case'''
@@ -91,6 +99,7 @@ if calculate_loss is True:
 RefG = (Ref1 - (Ref1+T1)*gm)**2/(Ref1*(1-np.sqrt(Ref1*Ref2))**2)
 tranG = T1*T2*gm/(np.sqrt(Ref1*Ref2)*(1-gm)**2)
 I = tranG+RefG
+loss = 1-I
 
 if calculate_loss is True:
     print("FSR = %.4E Hz" % vFSR)
@@ -110,6 +119,7 @@ if calculate_loss is True:
     print("Reflection Power gain = %.4f" % RefG)
     print("Transmission Power gain = %.4f" % tranG)
     print("Reflection + Transmission gain = %.4f" % I)
+    print("Intra-cavity Losses = %.4f" % loss)
 
 else:
     print("FSR = %.4E Hz" % vFSR)
@@ -120,7 +130,7 @@ else:
     print("w0 = %.4f cm" % w0)
     print("w1 = %.4f cm" % w1)
     print("w2 = %.4f cm" % w2)
-    print('Cavity Loss = %.2E cm ^-1' % a)
+    # print('Cavity Loss = %.2E cm ^-1' % a)
     print("Cavity Storage time = %.2E s" % t)
     print("Linewidth = %.4f Hz" % vFWHM)
     print("g1g2 = %.4f" % g)
@@ -129,40 +139,49 @@ else:
     print("Reflection Power gain = %.4f" % RefG)
     print("Transmission Power gain = %.4f" % tranG)
     print("Reflection + Transmission gain = %.4f" % I)
-    #print("Intra-cavity Losses = %.4f" % loss)
+    print("Intra-cavity Losses = %.4f" % loss)
 
 '''Plot the general cases for the phase and gains'''
 plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
-#gs = gridspec.GridSpec(3, 2)
-fig = plt.figure()
-plt.title('Intra-cavity Gain Curve', size=30)
-'''ax1 = fig.add_subplot(gs[0, 0])
+gs = gridspec.GridSpec(3, 1)
+fig = plt.figure(figsize=(8, 18))
+# plt.title('Intra-cavity Gain Curve', size=30)
+ax1 = fig.add_subplot(gs[0, 0])
 ax1.plot(dv, T_g)
-ax1.text(-0.2, 1, 'a)', transform=ax1.transAxes, size=14)
-ax1.set_title("Gain")
-ax1.set_ylabel(r'$G_{trans}$')'''
-ax2 = fig.add_subplot()#gs[1, 0])
+ax1.text(-0.2, 1, 'a)', transform=ax1.transAxes, size=32)
+ax1.tick_params(axis='y', which='major', labelsize=20)
+# ax1.set_title("Gain")
+ax1.set_ylabel(r'$G_{\text{trans}}$', size = 30)
+ax2 = fig.add_subplot(gs[1, 0])
 ax2.plot(dv, G_g)
-#ax2.text(-0.2, 1, 'b)',  transform=ax2.transAxes, size=14)
-ax2.set_ylabel(r'$G_{cav}$',size=20)
-ax2.set_xlabel(r"Detuning $\delta$ (MHz)",size=20)
-'''ax3 = fig.add_subplot(gs[2, 0])
+ax2.text(-0.2, 1, 'b)',  transform=ax2.transAxes, size=32)
+ax2.set_ylabel(r'$G_{\text{cav}}$',size=30)
+ax2.tick_params(axis='y', which='major', labelsize=20)
+# ax2.set_xlabel(r"Detuning $\delta$ (MHz)",size=20)
+ax3 = fig.add_subplot(gs[2, 0])
 ax3.plot(dv, R_g)
-ax3.text(-0.2, 1, 'c)', transform=ax3.transAxes, size=14)
-ax3.set_ylabel(r'$G_{refl}$')
-ax3.set_xlabel(r"Detuning $\delta$ (MHz)")'''
-'''ax4 = fig.add_subplot(gs[0, 1])
-ax4.set_title('Phase')
-ax4.plot(dv, phi_tran)
-ax4.set_ylabel(r'$\Phi_{trans}$')
-ax5 = fig.add_subplot(gs[1, 1])
-ax5.plot(dv, phi_cav)
-ax5.set_ylabel(r'$\Phi_{cav}$')
-ax6 = fig.add_subplot(gs[2, 1])
-ax6.plot(dv, phi_ref)
-ax6.set_xlabel(r"Detuning $\delta$ (MHz)")
-ax6.set_ylabel(r'$\Phi_{refl}$')'''
-plt.xlim(-0.3,0.3)
+ax3.text(-0.2, 1, 'c)', transform=ax3.transAxes, size=32)
+ax3.set_ylabel(r'$G_{\text{refl}}$', size = 30)
+ax3.set_xlabel(r"Detuning $\Delta\nu$ (MHz)", size = 30)
+ax3.tick_params(axis='both', which='major', labelsize=20)
+
+plt.setp(ax1.get_xticklabels(), visible=False)
+plt.setp(ax2.get_xticklabels(), visible=False)
+# plt.subplots_adjust(left=0.11, bottom=0.24, right=0.90, top=0.90, wspace=0.2, hspace=0)
+plt.tight_layout()
+# ax4 = fig.add_subplot(gs[0, 1])
+# ax4.set_title('Phase')
+# ax4.plot(dv, phi_tran)
+# ax4.set_ylabel(r'$\Phi_{trans}$')
+# ax5 = fig.add_subplot(gs[1, 1])
+# ax5.plot(dv, phi_cav)
+# ax5.set_ylabel(r'$\Phi_{cav}$')
+# ax6 = fig.add_subplot(gs[2, 1])
+# ax6.plot(dv, phi_ref)
+# ax6.set_xlabel(r"Detuning $\delta$ (MHz)")
+# ax6.set_ylabel(r'$\Phi_{refl}$')
+# plt.xlim(-0.3,0.3)
+plt.savefig('gain_curves.pdf')
 plt.show()
 
 print('Done')
