@@ -27,6 +27,7 @@ root = Tk()
 root.withdraw()
 path = simpledialog.askstring(title='Save File', prompt='Enter File Name:')
 path = path+'.pdf'
+
 merger.write(path)
 merger.close()
 

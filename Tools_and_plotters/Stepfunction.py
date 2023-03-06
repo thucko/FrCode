@@ -14,6 +14,6 @@ def step(x, x1, x2):
 
 x = np.arange(0, 100, 0.1)
 y = step(x, 25, 50)
-
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 plt.plot(x, y)
 plt.show()

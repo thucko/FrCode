@@ -12,22 +12,21 @@ def lorentzian(x, p, s0):
     return L
 
 
-h = 6.62607004E-34
-c = 3e8
-t = 26.24E-9
+h = 6.62607004E-34 # Plancks Constant
+c = 3e8 # speed of light m/s
+t = 38.11-9 # lifetime
 l = 780e-9
 
-Is = (np.pi*h*c)/(3*t*l**3)
+Is = (np.pi*h*c)/(3*t*l**3) #saturation intensity
 
 Is = Is/1e-4
 
-I = 156e-3/(np.pi*2.54**2)
-
+I = 156e-3/(np.pi*2.54**2) # light intensity W/cm^2
 s1 = I/Is
 
-laser = (266.65-15.0)
+laser = (266.65)
 x = np.arange(-(laser+0.5), (laser+1), 0.1)
-p = [1, 6.065, 0]
+p = [1, 7.57, 0]    
 s0 = np.sort([0.1, 1, 10, 100, s1])
 section = np.arange(laser, laser+0.105, 0.01)
 plot_sec = np.arange(laser-.01, laser+0.2, 0.01)
@@ -44,7 +43,7 @@ area4 = quad(lorentzian, section[0], section[len(section)-1], args=(p, s0[4]))
 print(area0[0]*100, area1[0]*100, area2[0]*100, area3[0]*100)
 val = [area0[0]*100, area1[0]*100, area2[0]*100, area3[0]*100, area4[0]*100]
 var = ord('%')
-plt.style.use('ggplot')
+plt.style.use('../matplotlib_style/stylelib/cern_root.mplstyle')
 gs = gridspec.GridSpec(2, 2)
 fig = plt.figure(figsize=(16, 9))
 ax1 = fig.add_subplot(gs[0, :])
